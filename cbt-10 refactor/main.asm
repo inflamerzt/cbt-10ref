@@ -25,11 +25,17 @@
 .equ BUZ = PB7; BUZZER PIN
 
 .equ DRVMOS = PD2 ; Mosfet drives power mosfet IRF...
+.equ DRVMOSP = PORTD 
 .equ BSTC = PD1 ; Boost capacitor
+.equ BSTCP = PORTD 
 .equ BSTD = PD0 ; Boost diode
-.equ BTN1 = PC2
-.equ BTN2 = PC3
+.equ BSTDP = PORTD 
+.equ BTN1 = PC2 ; Button 1
+.equ BTN1P = PORTC
+.equ BTN2 = PC3 ; Button2
+.equ BTN2P = PORTC
 .equ SENSOR = PD3 ; Radiation sensor
+.equ SENSORP = PORTD
 
 ;/*registers definitions*/
 
@@ -111,6 +117,8 @@ main:
 
 ;--------------- end main --------------------- 
 /* functions prototypes */
+
+
 
 
 
