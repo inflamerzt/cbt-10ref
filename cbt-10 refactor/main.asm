@@ -6,47 +6,7 @@
 ;
 
 .include "m88PAdef.inc"
-
-;/* macro definitions */
-
-;------------------------example--------------------
-;.MACRO SUBI16 ; Start macro definition
-;subi @1,low(@0) ; Subtract low byte
-;sbci @2,high(@0) ; Subtract high byte
-;.ENDMACRO ; End macro definition
-;.CSEG ; Start code segment
-;SUBI16 0x1234,r16,r17 ; Sub.0x1234 from r17:r1
-;---------------------------------------------------
-
-;/* periphery definitions */
-.equ LEDP = PORTB; LED PORT
-.equ LED = PB6; LED PIN, high inactive
-.equ BUZP = PORTB; BUZZER PORT
-.equ BUZ = PB7; BUZZER PIN
-
-.equ DRVMOS = PD2 ; Mosfet drives power mosfet IRF...
-.equ DRVMOSP = PORTD 
-.equ BSTC = PD1 ; Boost capacitor
-.equ BSTCP = PORTD 
-.equ BSTD = PD0 ; Boost diode
-.equ BSTDP = PORTD 
-.equ BTN1 = PC2 ; Button 1
-.equ BTN1P = PORTC
-.equ BTN2 = PC3 ; Button2
-.equ BTN2P = PORTC
-.equ SENSOR = PD3 ; Radiation sensor
-.equ SENSORP = PORTD
-
-;/*registers definitions*/
-
-.def tmpl = r16
-.def tmph = r17
-
-;/*bits definitions*/
-
-;/*status variable STVAR*/
-.equ STNC = 0; SPI transfer is not complete
-
+.include "definitions.inc"
 
 ;/*interrupt vector routine*/
 
@@ -109,8 +69,8 @@ reset:
 	ldi		tmph, (1<<DDB3)|(1<<DDB5) ; set MOSI and SCK as out
 	out		DDRB,tmph
 	; Enable SPI, Master
-	ldi		tmpl, (1<<MSTR)|(1<<SPE);0b01010000		; Master Mode(MSTR), Enable SPI(SPE)
-	out		SPCR, tmpl
+	;ldi		tmpl, (1<<MSTR);|(1<<SPE);0b01010000		; Master Mode(MSTR), Enable SPI(SPE)
+	;out		SPCR, tmpl
 	; Set spid 2X
 	ldi		tmpl, (1<<SPI2X) ;0b00000001		; double speed bit(SPI2X)
 	out		SPSR, tmpl
@@ -126,31 +86,31 @@ reset:
 	sts STVAR, tmpl
 
 
+;
+;	ldi argl, 0x55
+;	rcall SPI_TXC
+;	ldi argl, 0x55
+;	rcall SPI_TXD
+
+	
 
 
-	;/* spi transfer example from datasheet */
-	/*
-		SPI_MasterInit:
-			; Set MOSI and SCK output, all others input
-			ldi r17,(1<<DD_MOSI)|(1<<DD_SCK)
-			out DDR_SPI,r17
-			; Enable SPI, Master, set clock rate fck/16
-			ldi r17,(1<<SPE)|(1<<MSTR)|(1<<SPR0)
-			out SPCR,r17
-			ret
-		SPI_MasterTransmit:
-			; Start transmission of data (r16)
-			out SPDR,r16
-		Wait_Transmit:
-			; Wait for transmission complete
-			in r16, SPSR
-			sbrs r16, SPIF
-			rjmp Wait_Transmit
-			ret
-	*/
-	;/****************************************/
+;/*		init_LCD  */
+	cbi		LCD_RSTP,LCD_RST			; ? ????? RES
+	;rcall	pause_100ms
+	sbi		LCD_RSTP,LCD_RST			; ???????? RES
+	;rcall	pause_10ms
 
+	ldi countl, 8 ;5 in original version
+	ldi Zl,low(LCD_init_data*2)
+	ldi Zh,high(LCD_init_data*2)
+LCD_init:
+	lpm argl,Z+
+	rcall SPI_TXC
+	dec countl
+	brne LCD_init
 
+	
 
 
 ; Replace with your application code
@@ -166,14 +126,51 @@ main:
 ;--------------- end main --------------------- 
 /* functions prototypes */
 
-SPI_TX:
-	out SPDR,r16
+SPI_TXC:
+	;disable SPI
+	ldi tmph, (1<<MSTR)|(1<<SPE)
+	clr tmpl
+	out SPCR, tmpl
+
+	;cbi SPI_TXP, (1<<SPI_TX)
+	in tmpl ,SPI_TXP
+	cbr tmpl, (1<<SPI_TX) | (1<<SPI_SCK)
+	out SPI_TXP, tmpl
+	sbr tmpl, (1<<SPI_SCK)
+	out SPI_TXP,tmpl
+	cbr tmpl, (1<<SPI_SCK) | (1<<SPI_TX)
+	out SPI_TXP,tmpl
+	out SPCR,tmph
+	rjmp SPI_Transmit	
+SPI_TXD:
+	;disable SPI
+	ldi tmph, (1<<MSTR)|(1<<SPE)
+	clr tmpl
+	out SPCR, tmpl
+
+	;cbi SPI_TXP, (1<<SPI_TX)
+	in tmpl ,SPI_TXP
+	cbr tmpl, (1<<SPI_SCK)
+	sbr tmpl, (1<<SPI_TX)
+	out SPI_TXP, tmpl
+	sbr tmpl, (1<<SPI_SCK)
+	out SPI_TXP,tmpl
+	cbr tmpl, (1<<SPI_SCK)
+	out SPI_TXP,tmpl
+	out SPCR,tmph
+	rjmp SPI_Transmit	
+
+
+
+	;ldi tmpl, (1<<SPIT)
+SPI_Transmit:	
+		out SPDR,argl
 Wait_SPI_TX:
 	;Wait for transmission complete
-	in r16, SPSR
-	sbrs r16, SPIF
+	in tmpl, SPSR
+	sbrs tmpl, SPIF
 	rjmp Wait_SPI_TX
-	in r16, SPDR
+	in tmpl, SPDR ; flush data register as trash data, maybe use as charger detect
 	ret
 	
 
@@ -183,6 +180,8 @@ Wait_SPI_TX:
 ;/* program memory is word addressed: ldi ZL,LOW(2*var)
 .CSEG
 ctest: .dw 1
+
+.include "data_fm.inc"
 
 .DSEG
 ;/* data variables */
