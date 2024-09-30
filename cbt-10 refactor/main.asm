@@ -99,10 +99,58 @@ reset:
 
 	sei
 
+;/*init section */
+
+	;GPIO init
+
+	;/*Periph init*/
+	;SPI init
+	; Set MOSI and SCK output, all others input
+	ldi		tmph, (1<<DDB3)|(1<<DDB5) ; set MOSI and SCK as out
+	out		DDRB,tmph
+	; Enable SPI, Master
+	ldi		tmpl, (1<<MSTR)|(1<<SPE);0b01010000		; Master Mode(MSTR), Enable SPI(SPE)
+	out		SPCR, tmpl
+	; Set spid 2X
+	ldi		tmpl, (1<<SPI2X) ;0b00000001		; double speed bit(SPI2X)
+	out		SPSR, tmpl
+
+
+	
+
+	;initial settings
+
 /*test section*/
 	lds tmpl, STVAR
 	sbr tmpl, (1<<STNC)
 	sts STVAR, tmpl
+
+
+
+
+	;/* spi transfer example from datasheet */
+	/*
+		SPI_MasterInit:
+			; Set MOSI and SCK output, all others input
+			ldi r17,(1<<DD_MOSI)|(1<<DD_SCK)
+			out DDR_SPI,r17
+			; Enable SPI, Master, set clock rate fck/16
+			ldi r17,(1<<SPE)|(1<<MSTR)|(1<<SPR0)
+			out SPCR,r17
+			ret
+		SPI_MasterTransmit:
+			; Start transmission of data (r16)
+			out SPDR,r16
+		Wait_Transmit:
+			; Wait for transmission complete
+			in r16, SPSR
+			sbrs r16, SPIF
+			rjmp Wait_Transmit
+			ret
+	*/
+	;/****************************************/
+
+
 
 
 ; Replace with your application code
@@ -118,7 +166,16 @@ main:
 ;--------------- end main --------------------- 
 /* functions prototypes */
 
-
+SPI_TX:
+	out SPDR,r16
+Wait_SPI_TX:
+	;Wait for transmission complete
+	in r16, SPSR
+	sbrs r16, SPIF
+	rjmp Wait_SPI_TX
+	in r16, SPDR
+	ret
+	
 
 
 
