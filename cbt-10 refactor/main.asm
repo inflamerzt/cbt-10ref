@@ -63,11 +63,21 @@ reset:
 
 	;GPIO init
 
+	;PORTB init
+
+	;ldi tmpl, (1<<DDB6)|(1<<DDB7) ; set output: LED, BUZZER, SPI_MOSI, SPI_SCK
+	ldi tmpl, (1<<LED) | (1<<BUZ) | (1<<SPI_TX) | (1<<SPI_SCK) ;DDB equals PB
+	; set high: LED, BUZZER, SPI_MOSI, SPI_SCK
+	ldi tmph, (1<<LED) | (1<<BUZ) | (1<<SPI_TX) | (1<<SPI_SCK) 
+	out PORTB, tmph
+	out DDRB, tmpl
+
 	;/*Periph init*/
+
 	;SPI init
 	; Set MOSI and SCK output, all others input
-	ldi		tmph, (1<<DDB3)|(1<<DDB5) ; set MOSI and SCK as out
-	out		DDRB,tmph
+	;ldi		tmph, (1<<DDB3)|(1<<DDB5) ; set MOSI and SCK as out
+	;out		DDRB,tmph
 	; Enable SPI, Master
 	;ldi		tmpl, (1<<MSTR);|(1<<SPE);0b01010000		; Master Mode(MSTR), Enable SPI(SPE)
 	;out		SPCR, tmpl
@@ -75,10 +85,17 @@ reset:
 	ldi		tmpl, (1<<SPI2X) ;0b00000001		; double speed bit(SPI2X)
 	out		SPSR, tmpl
 
+	;/* create constants in registers  */
 
-	
+	clr zero
+
+	ldi tmpl, 1
+	mov one, tmpl
 
 	;initial settings
+
+
+
 
 /*test section*/
 	lds tmpl, STVAR
