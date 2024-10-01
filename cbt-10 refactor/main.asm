@@ -149,7 +149,8 @@ SPI_TXC:
 	clr tmpl
 	out SPCR, tmpl
 
-	;cbi SPI_TXP, (1<<SPI_TX)
+	cbi SPI_TXP, SPI_TX
+
 	in tmpl ,SPI_TXP
 	cbr tmpl, (1<<SPI_TX) | (1<<SPI_SCK)
 	out SPI_TXP, tmpl
