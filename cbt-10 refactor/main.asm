@@ -195,11 +195,8 @@ reset:
 
 	loadTXdata LCD_init,SPI_TX_cmd,tmpregl			;macro to preload data from pointer to tmp register
 	
-	;loadTXdata LCD_data,SPI_TX_data,r16
+	;== clear screen loop 9 lines
 
-	;loadTXdata LCD_nop,SPI_TX_data,r16
-	;clear 4 lines of display
-	
 	ldi tmpregl, 9
 	clr_scr:
 	push tmpregl
@@ -207,7 +204,7 @@ reset:
 	pop tmpregl
 	dec tmpregl
 	brne clr_scr
-
+	;-------------------------------
 
 
 	LCD_gotoXY 20,3
@@ -217,60 +214,12 @@ reset:
 	loadTXdata Strelka1,SPI_TX_data,r16
 
 
-
-
-
-	;loadTXdata LCD_nop,SPI_TX_data,r16
-	;loadTXdata LCD_nop,SPI_TX_data,r16
-	;loadTXdata LCD_nop,SPI_TX_data,r16	
-
 	loop:
 
-
-	
-	;rcall SPI_TX_cmd
-	;ldi Zl,low(LCD_init*2)
-	;ldi Zh,high(LCD_init*2)
-	;lpm r16,Z+
-	;mov TXCount,r16
-	;lpm r16,Z+
-	;movw tmpZl,Zl
-	;rcall SPI_TX_cmd
-	
-	
 	rjmp loop
 
 
-	sbi PORTB, P_MOSI
-	cbi PORTB, P_MOSI
 
-
-
-	ldi r16,0x0F
-
-	tr:
-	
-	out SPCR, zeroreg
-	
-	sbi PORTB, P_SCK
-	
-	out SPCR, spenreg
-
-	out SPDR,r16
-	;starting transfer
-	cbi PORTB, P_SCK
-
-	;we can prepare new data here
-	ldi r16,0x0F
-
-
-	;=================
-	wt:
-	in r0, SPSR
-	sbrs r0,SPIF
-	rjmp wt
-
-	rjmp tr
 
 	; Pepare SPI data
 	SPI_prep:
