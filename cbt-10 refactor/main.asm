@@ -21,9 +21,9 @@
 	;Установка линии начала сканирования S:0?Y?63
 
 	;=== set start scan number S:0?Y?63 shift dram LCD
-	;ldi tmpregl,0 //load position
-	;andi tmpregl,0x3F
-	;ori tmpregl,0x40 ; y2..0 (0..7)
+	;ldi tmpreg,0 //load position
+	;andi tmpreg,0x3F
+	;ori tmpreg,0x40 ; y2..0 (0..7)
 	;inc TXCount
 	;rcall SPI_TX_cmd
 
@@ -41,66 +41,52 @@
 
 .def zeroreg = r2
 .def spenreg = r3
-.def TXCount = r4
 .def TXZCount = r5
 .def tmpZl = r6
 .def tmpZh = r7
 .def TXC_ptrl = r8
 .def TXC_ptrh = r9
-.def TXXpos = r10
-.def TXYpos = r11
-.def TXRowCount = r12
-.def TXCountDupl = r13
 
 
-.def tmpregl = r16
+
+.def tmpreg = r16
 .def tmpregh = r17 
 
+.def TXCount = r18
+.def TXRowCount = r19
+
+.def TXXpos = r22
+.def TXYpos = r23
 ; probably use r24,r25 as function operands such as input variables
-.def varregl = r24
-.def varregh = r25
+.def arg = r24
+.def argh = r25
 
 
 
 
 
-.macro loadTXdata
-; @0 - data address ex: LCD_init, 
-; @1 transmit data or command (SPI_TX_cmd/SPI_TX_data), 
-; @2 - tmpreg
-	
-	clr TXZCount
+.macro LCD_cmd 
+	cbi PORTB,P_MOSI
 	ldi Zl,low(@0*2)
 	ldi Zh,high(@0*2)
-	lpm @2,Z+
-	mov TXCount,@2
-	mov TXCountdupl,TXCount
-	lpm @2,Z+
-	mov TXRowCount,@2
-	lpm @2,Z+
-	cpse @2,zeroreg
-	rjmp mnz
-	lpm TXZCount,Z+
-	mnz:
-	movw tmpZl,Zl
-	rcall @1
-
-
+	rcall SPI_start
 .endmacro
 
-.macro LCD_gotoXY 
-;@0 - X (integers) 
-;@1 - Y (integer)
-	ldi tmpregl,@0
-	mov TXXpos, tmpregl
-	ldi tmpregl,0
-	mov TXYpos, tmpregl
-	rcall Goto_XY_LCD
+.macro LCD_dat
+	sbi PORTB,P_MOSI
+	ldi Zl,low(@0*2)
+	ldi Zh,high(@0*2)
+	rcall SPI_start
 .endmacro
 
-.macro LCD_incY
-	inc TXYpos
-	rcall Goto_XY_LCD
+.macro LCD_rep
+	ldi Zl,low(@0*2)
+	ldi Zh,high(@0*2)
+	rcall SPI_start
+.endmacro
+
+.macro LCD_XY
+
 .endmacro
 
 ;.CSEG
@@ -140,17 +126,17 @@ reset:
 	clr r0
 	out SREG,r0
 
-	ldi		tmpregl, low(RAMEND)
-	out		SPL, tmpregl
-	ldi		tmpregl, high(RAMEND)
-	out		SPH, tmpregl
+	ldi		tmpreg, low(RAMEND)
+	out		SPL, tmpreg
+	ldi		tmpreg, high(RAMEND)
+	out		SPH, tmpreg
 
 	;sei
 	
 	;=init predefined registers
 	clr zeroreg
 	ldi r16,(1<<MSTR)|(1<<SPE)
-	mov spenreg, tmpregl
+	mov spenreg, tmpreg
 	
 	ldi Zl,low(wait_TX_complete)
 	ldi Zh,high(wait_TX_complete)
@@ -159,8 +145,8 @@ reset:
 
 	;--------------------------
 	;=GPIO init
-	ldi tmpregl, (1<<P_LCD_RES)
-	out DDRD,tmpregl
+	ldi tmpreg, (1<<P_LCD_RES)
+	out DDRD,tmpreg
 	sbi PORTD, P_LCD_RES
 	cbi PORTD, P_LCD_RES
 
@@ -168,8 +154,8 @@ reset:
 	; 10 - 100ms hx1230 recomendation 
 
 	;=SPI init
-	ldi tmpregl, (1<<P_SS)|(1<<P_SCK)|(1<<P_MOSI)
-	out DDR_SPI,tmpregl
+	ldi tmpreg, (1<<P_SS)|(1<<P_SCK)|(1<<P_MOSI)
+	out DDR_SPI,tmpreg
 	cbi DDR_SPI,P_MISO
 
 	sbi PORTD,P_LCD_RES
@@ -177,9 +163,9 @@ reset:
 	;ldi r16,(1<<MSTR)|(1<<SPE);|(1<<SPR0)
 	;out SPCR, spenreg
 
-	in tmpregl, SPSR
-	ori tmpregl, (1<<SPI2x)
-	out SPSR, tmpregl
+	in tmpreg, SPSR
+	ori tmpreg, (1<<SPI2x)
+	out SPSR, tmpreg
 	;--------------------------------
 	;======= delays temporary disabled
 	.ifndef DBG
@@ -192,133 +178,175 @@ reset:
 
 
 
+	;ldi Zl,low(LCD_init*2)
+	;ldi Zh,high(LCD_init*2)
+	;cbi PORTB,P_MOSI
+	;rcall SPI_start
 
-	loadTXdata LCD_init,SPI_TX_cmd,tmpregl			;macro to preload data from pointer to tmp register
+	LCD_cmd LCD_init
+	;loadTXdata LCD_init,SPI_TX_cmd,tmpreg			;macro to preload data from pointer to tmp register
 	
 	;== clear screen loop 9 lines
-
-	ldi tmpregl, 9
+	ldi tmpregh,2
+	ldi tmpreg, 96*2
+	sbi PORTB,P_MOSI
 	clr_scr:
-	push tmpregl
-	loadTXdata LCD_nop,SPI_TX_data,r16
-	pop tmpregl
-	dec tmpregl
+	push tmpreg
+
+	LCD_rep LCD_nop
+
+	;loadTXdata LCD_nop,SPI_TX_data,r16
+	pop tmpreg
+	dec tmpreg
 	brne clr_scr
+	dec tmpregh
+	brne clr_scr
+
 	;-------------------------------
+	LCD_XY
+
+	ldi TXXpos, 30
+	ldi TXYpos, 0
+	rcall LCD_goto_XY
+
+	LCD_dat Pattern
+	;LCD_dat Strelka
+
+	;LCD_gotoXY 20,3
+
+	;ldi TXXpos,20
+	;ldi TXYpos,1
+	;rcall GOTO_XY_LCD
+		
+
+	;sbi PORTB,P_MOSI
+
+	;ldi Zl,low(Strelka*2)
+	;ldi Zh,high(Strelka*2)
+	;rcall SPI_start
+	
 
 
-	LCD_gotoXY 20,3
-	loadTXdata Strelka,SPI_TX_data,r16
-
-	LCD_incY
-	loadTXdata Strelka1,SPI_TX_data,r16
+	;LCD_incY
+	;loadTXdata Strelka1,SPI_TX_data,r16
 
 
 	loop:
-
+	nop
 	rjmp loop
 
-
+	
 
 
 	; Pepare SPI data
-	SPI_prep:
+	SPI_start:
 		clr TXZCount
 		;ldi Zl,low(@0*2)
 		;ldi Zh,high(@0*2)
-		;lpm @2,Z+
-		;mov TXCount,@2
-		;mov TXCountdupl,TXCount
-		;lpm @2,Z+
-		;mov TXRowCount,@2
-		;lpm @2,Z+
-		;cpse @2,zeroreg
-		;rjmp mnz
-		;lpm TXZCount,Z+
-		mnz:
-		movw tmpZl,Zl
-		;rcall @1
-	ret
+		lpm TXCount,Z+
+		;inc TXCount
+		lpm TXRowCount,Z+
+		lpm arg,Z+
+		cp TXRowCount,zeroreg
+		breq SPI_TX
+		;IF not save parameters to memory
+		sts TXCountMem, TXCount
+		
+	
+	SPI_rstart:
+		dec TXRowCount
+		cp TXRowCount,zeroreg
+		breq SPI_TX
+		
+		rcall SPI_TX
 
+		push TXRowCount
+		clr TXRowCount
+		
+		inc TXYpos
+		rcall LCD_goto_XY
+		
+		sbi PORTB,P_MOSI
+		
+		pop TXRowCount
+		lpm arg,Z+
+		lds TXCount, TXCountMem
+		rjmp SPI_rstart
 
-	; SPI_Transmit reassembly as function using r16 as data to transmit
-	SPI_TX_cmd:
-	cbi PORTB,P_MOSI
-	rjmp SPI_TX
-	SPI_TX_data:
-	sbi PORTB,P_MOSI
+		ret
+
+		SPI_noret:
+		
+
+		ret
+		
+		lpm arg,Z+
+
+		ldi TXCount, 4
+		;lds TXCount, TXCountMem
+		rcall SPI_TX
+		;cp TXRowCount,zeroreg
+		;brne SPI_rstart
+		ret
+
+		 
+
+	
+	
 	SPI_TX:
 
 	out SPCR, zeroreg		;disable hardware SPI
 	sbi PORTB, P_SCK		;pull up SCK to send D/C SPI signal
 	out SPCR, spenreg		;enable hardware SPI
-	out SPDR,r16			;starting transfer
+	out SPDR,arg			;starting transfer
 	cbi PORTB, P_SCK		;release SCK, after start to reduce cpu cycles
 
 	;we can prepare new data here
 	dec TXCount
 	breq wait_TX_complete
-
-		movw Zl,tmpZl
-		
-		cpi r16, 0
-		breq no_load
-		lpm r16, Z+
-		cpi r16, 0
-		brne transmit
-		lpm TXZCount,Z+
-		;inc TXZCount
-		rjmp transmit
-
-		no_load:
-		dec TXZCount
-		brne transmit 
-		lpm r16,Z+
-		transmit:
-		
-		movw tmpZl,Zl 
-
-	;ldi Zl,low(wait_TX_complete)
-	;ldi Zh,high(wait_TX_complete)
-	movw Zl,TXC_ptrl
-	icall
-	rjmp SPI_TX 
+	;=========================
+	lpm arg,Z+
 	
-
-	;=================
 	wait_TX_complete:
-	in r0, SPSR
-	sbrs r0,SPIF
+	in tmpreg, SPSR
+	sbrs tmpreg,SPIF
 	rjmp wait_TX_complete
+	cp TXCount, zeroreg
+	brne SPI_TX
 	ret
 
+
 	;=================
-	Goto_XY_LCD:
+
+
+	;=================
+	LCD_goto_XY:
 	;.def TXXpos = r10
 	;.def TXYpos = r11
 
 	;=== set x position 0..95
 	;=== low 4 bits
 	;load position
-	mov tmpregl, TXXpos
-	andi tmpregl, 0x0F
+	push arg
+	cbi PORTB,P_MOSI
+	mov arg, TXXpos
+	andi arg, 0x0F
 	inc TXCount
-	rcall SPI_TX_cmd
+	rcall SPI_TX
 	;=== high 3 bits
-	mov tmpregl, TXXpos
-	swap tmpregl
-	andi tmpregl, 0x07
-	ori tmpregl,0x10
+	mov arg, TXXpos
+	swap arg
+	andi arg, 0x0F
+	ori arg,0x10
 	inc TXCount
-	rcall SPI_TX_cmd
+	rcall SPI_TX
 
 		;=== set y position 0..7
-	mov tmpregl,TXYpos //load position
-	andi tmpregl,0x07
-	ori tmpregl,0xB0 ; y2..0 (0..7)
+	mov arg,TXYpos //load position
+	ori arg,0xB0 ; y2..0 (0..7)
 	inc TXCount
-	rcall SPI_TX_cmd 
-
+	rcall SPI_TX
+	pop arg
 	ret
 
 
@@ -359,13 +387,13 @@ cikl_pause_t:
 
 .CSEG
 LCD_init:
-.db 4,0, LC_nallon_dis,LC_fillall_dis,LC_nor_dis,LC_pwron;5
+.db 4,0, LC_nallon_dis,LC_pwron,LC_fillall_dis,LC_nor_dis;5
 
 LCD_data:
 .db 8,0, 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00 ;9
 
 LCD_nop:
-.db 96,4, 0, 96 ;96
+.db 1,0, 0,0; 96 ;96
 
 LCD_full:
 .db 5,0, 0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA
@@ -375,8 +403,15 @@ LCD_prim:
 .db 8,0, 0xFF,0x00,1,0xFF,0x00,4,0xFF,0xFF,0xFF,0xFF
 
 Strelka:
-.db 4, 2 
-.db 0x00, 1, 0x80, 0xC0, 0xE0, 0xFF
-Strelka1:
-.db 4, 2
-.db 0x01, 0x03, 0x07, 0x0F
+.db 4, 4
+.db 0x00, 0x80, 0xC0, 0xE0, 0x01, 0x03, 0x07, 0x0F
+.db 0x00, 0x80, 0xC0, 0xE0, 0x01, 0x03, 0x07, 0x0F
+
+Pattern:
+.db 4, 4
+.db 0x03,0x0F,0x3F,0xFF,0x03,0x0F,0x3F,0xFF,0x03,0x0F,0x3F,0xFF,0x03,0x0F,0x3F,0xFF
+.db 0xFF,0xFF,0xFF,0xFF
+
+
+.DSEG 
+TXCountMem: .byte 1 
