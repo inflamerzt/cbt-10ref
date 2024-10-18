@@ -5,7 +5,7 @@
 ; Author : inflamer
 ;
 
-;.equ DBG = 1  ;comment before flash
+.equ DBG = 1  ;comment before flash
 
 .equ LC_pwroff = 0x20
 .equ LC_pwron = 0x2F
@@ -21,9 +21,9 @@
 	;Установка линии начала сканирования S:0?Y?63
 
 	;=== set start scan number S:0?Y?63 shift dram LCD
-	;ldi tmpreg,0 //load position
-	;andi tmpreg,0x3F
-	;ori tmpreg,0x40 ; y2..0 (0..7)
+	;ldi tmpregl,0 //load position
+	;andi tmpregl,0x3F
+	;ori tmpregl,0x40 ; y2..0 (0..7)
 	;inc TXCount
 	;rcall SPI_TX_cmd
 
@@ -37,57 +37,89 @@
 
 .equ P_LCD_RES = PD7
 
-; controlreg
-.equ inv_dis =0
-;============
+
 
 .def zeroreg = r2
 .def spenreg = r3
-.def controlreg = r4
+.def TXCount = r4
 .def TXZCount = r5
 .def tmpZl = r6
 .def tmpZh = r7
 .def TXC_ptrl = r8
 .def TXC_ptrh = r9
+.def TXXpos = r10
+.def TXYpos = r11
+.def TXRowCount = r12
+.def TXCountDupl = r13
 
 
-
-.def tmpreg = r16
+.def tmpregl = r16
 .def tmpregh = r17 
 
-.def TXCount = r18
-.def TXRowCount = r19
-
-.def TXXpos = r22
-.def TXYpos = r23
 ; probably use r24,r25 as function operands such as input variables
-.def arg = r24
+.def argl = r24
 .def argh = r25
 
-.macro LCD_cmd 
-	cbi PORTB,P_MOSI
+
+
+
+
+.macro loadTXdata
+; @0 - data address ex: LCD_init, 
+; @1 transmit data or command (SPI_TX_cmd/SPI_TX_data), 
+; @2 - tmpreg
+	
+	clr TXZCount
 	ldi Zl,low(@0*2)
 	ldi Zh,high(@0*2)
-	rcall SPI_start
+	lpm @2,Z+
+	mov TXCount,@2
+	mov TXCountdupl,TXCount
+	lpm @2,Z+
+	mov TXRowCount,@2
+	lpm @2,Z+
+	cpse @2,zeroreg
+	rjmp mnz
+	lpm TXZCount,Z+
+	mnz:
+	movw tmpZl,Zl
+	;rcall @1
+	rcall SPI_TX
+
+
 .endmacro
 
-.macro LCD_dat
-	sbi PORTB,P_MOSI
+.macro LCD_write
+	; @0 - data address ex: LCD_init, 
+	; @1 transmit data or command (SPI_TX_cmd/SPI_TX_data), 
 	ldi Zl,low(@0*2)
 	ldi Zh,high(@0*2)
-	rcall SPI_start
+	rcall SPI_prep
+	next_line:
+	rcall @1
+	cp TXRowCount, zeroreg
+	breq end
+	LCD_incY
+	ldi tmpregl, 4
+	mov TXCount, tmpregl
+	rcall @1
+	end:
+	 
 .endmacro
 
-.macro LCD_rep
-	ldi Zl,low(@0*2)
-	ldi Zh,high(@0*2)
-	rcall SPI_start
+.macro LCD_gotoXY 
+;@0 - X (integers) 
+;@1 - Y (integer)
+	ldi tmpregl,@0
+	mov TXXpos, tmpregl
+	ldi tmpregl,0
+	mov TXYpos, tmpregl
+	rcall Goto_XY_LCD
 .endmacro
 
-.macro LCD_XY ;x = 0..95  y = 0..7
-	ldi TXXpos, @0
-	ldi TXYpos, @1
-	rcall LCD_goto_XY
+.macro LCD_incY
+	inc TXYpos
+	rcall Goto_XY_LCD
 .endmacro
 
 ;.CSEG
@@ -127,17 +159,17 @@ reset:
 	clr r0
 	out SREG,r0
 
-	ldi		tmpreg, low(RAMEND)
-	out		SPL, tmpreg
-	ldi		tmpreg, high(RAMEND)
-	out		SPH, tmpreg
+	ldi		tmpregl, low(RAMEND)
+	out		SPL, tmpregl
+	ldi		tmpregl, high(RAMEND)
+	out		SPH, tmpregl
 
 	;sei
 	
 	;=init predefined registers
 	clr zeroreg
 	ldi r16,(1<<MSTR)|(1<<SPE)
-	mov spenreg, tmpreg
+	mov spenreg, tmpregl
 	
 	ldi Zl,low(wait_TX_complete)
 	ldi Zh,high(wait_TX_complete)
@@ -146,8 +178,8 @@ reset:
 
 	;--------------------------
 	;=GPIO init
-	ldi tmpreg, (1<<P_LCD_RES)
-	out DDRD,tmpreg
+	ldi tmpregl, (1<<P_LCD_RES)
+	out DDRD,tmpregl
 	sbi PORTD, P_LCD_RES
 	cbi PORTD, P_LCD_RES
 
@@ -155,8 +187,8 @@ reset:
 	; 10 - 100ms hx1230 recomendation 
 
 	;=SPI init
-	ldi tmpreg, (1<<P_SS)|(1<<P_SCK)|(1<<P_MOSI)
-	out DDR_SPI,tmpreg
+	ldi tmpregl, (1<<P_SS)|(1<<P_SCK)|(1<<P_MOSI)
+	out DDR_SPI,tmpregl
 	cbi DDR_SPI,P_MISO
 
 	sbi PORTD,P_LCD_RES
@@ -164,9 +196,9 @@ reset:
 	;ldi r16,(1<<MSTR)|(1<<SPE);|(1<<SPR0)
 	;out SPCR, spenreg
 
-	in tmpreg, SPSR
-	ori tmpreg, (1<<SPI2x)
-	out SPSR, tmpreg
+	in tmpregl, SPSR
+	ori tmpregl, (1<<SPI2x)
+	out SPSR, tmpregl
 	;--------------------------------
 	;======= delays temporary disabled
 	.ifndef DBG
@@ -178,209 +210,147 @@ reset:
 	.endif
 
 
-	LCD_cmd LCD_init
-	
 
+	cbi PORTB,P_MOSI ;spi command
+	loadTXdata LCD_init,SPI_TX_cmd,tmpregl			;macro to preload data from pointer to tmp register
+	
 	;== clear screen loop 9 lines
-	LCD_XY 0,0
-	;ldi tmpreg, 5
-	;sbi PORTB,P_MOSI
-	;clr_scr:
-	;push tmpreg
-	
-	;LCD_dat LCD_clr
-	LCD_dat LCD_clrline
-	LCD_dat LCD_clrline
-	LCD_dat LCD_clrline
-	LCD_dat LCD_clrline
-	LCD_dat LCD_clrline
-	LCD_dat LCD_clrline
-	LCD_dat LCD_clrline
-	LCD_dat LCD_clrline
-	LCD_dat LCD_clrline
-	;pop tmpreg
-	;dec tmpreg
-	;brne clr_scr
-	/*
-	LCD_XY 0,0
-	LCD_dat MINI_CIFRA_0
-	LCD_dat MINI_CIFRA_0
+
+	ldi tmpregl, 9
+	clr_scr:
+	push tmpregl
+	sbi PORTB,P_MOSI
+	loadTXdata LCD_nop,SPI_TX_data,tmpregl
+	pop tmpregl
+	dec tmpregl
+	brne clr_scr
+	;-------------------------------
 
 
-	LCD_XY 0,1
-	LCD_dat CIFRA_8
-	LCD_XY 8,1
-	LCD_dat ZAPITAY
-	LCD_XY 10,1
-	LCD_dat CIFRA_0
-	*/
-	/*
-	LCD_XY 30,0
-	LCD_dat Pattern
+	LCD_gotoXY 20,3
+	ldi Zl,low(Strelka*2)
+	ldi Zh,high(Strelka*2)
+	rcall SPI_prep
+	sbi PORTB,P_MOSI
+	rcall SPI_TX
+	sbi PORTB,P_MOSI
+	rcall SPI_TX
 
 	
-	LCD_XY 20,8
-	LCD_dat Pattern1
-	
-	LCD_XY 30,7
-	LCD_dat Pattern3
-	
+	;rcall SPI_TX_data
+	;LCD_incY
 
-	LCD_XY 0,5
-	LCD_dat Pattern4
-	;LCD_dat Pattern4
-	;LCD_dat Pattern4
-	*/
-	;===========================================
-	;test here
-	;===========================================
-	
-	LCD_XY 0,0
-	.include "test.inc"
 
-	;===========================================
+	;LCD_write Strelka,SPI_TX_data
+
+	;LCD_incY
+	;LCD_write Strelka1,SPI_TX_data
+
 
 	loop:
-	nop
-	rjmp loop
-/*
-	unpack_zeroes:
-		cpi arg, 0
-		breq no_load
-		lpm arg, Z+
-		cpi arg, 0
-		brne transmit
-		lpm TXZCount,Z+
-		rjmp transmit
 
-		no_load:
-		dec TXZCount
-		brne transmit 
-		lpm arg,Z+
-		transmit:
-	ret
-	*/
+	rjmp loop
+
+
+
 
 	; Pepare SPI data
-	SPI_start:
-		clr TXZCount
+	SPI_prep:
+		clr TXZCount		
 		lpm TXCount,Z+
+		mov TXCountdupl,TXCount
 		lpm TXRowCount,Z+
-		SPI_start_defined: ; if TXCount,TXRowCount preloaded possible reduce size
-		lpm arg,Z+
-		;rcall unpack_zeroes
-		cp arg,zeroreg
-		brne SPSnz
+		lpm tmpregl,Z+
+		cpse tmpregl,zeroreg
+		rjmp mnz
 		lpm TXZCount,Z+
-		SPSnz:
+		mnz:
+		movw tmpZl,Zl
+	ret
 
-		cp TXRowCount,zeroreg
-		breq SPI_TX
-		;IF not save parameters to memory
-		sts TXCountMem, TXCount
-		sts TXRowCountMem, TXRowCount
+
+	; SPI_Transmit reassembly as function using r16 as data to transmit
+	;SPI_TX_cmd:
+	;cbi PORTB,P_MOSI
+	;rjmp SPI_TX
+	;SPI_TX_data:
+	;sbi PORTB,P_MOSI
 	
-		
-	SPI_rstart:
-		dec TXRowCount
-		cp TXRowCount,zeroreg
-		breq SPI_TX		
-		rcall SPI_TX
-		inc TXYpos
-		rcall LCD_goto_XY
-		sbi PORTB,P_MOSI
-		lds TXCount, TXCountMem
-		
-		;if arg != 0
-		;cpi arg,0   ;zero check
-		;breq zero_arg ;zero check
-		cp TXZCount, zeroreg
-		brne SPrS_nz
-		lpm arg,Z+
-		cp arg, zeroreg
-		brne SPI_rstart
-
-		lpm TXZCount,Z+
-		rjmp SPI_rstart		
-		SPrS_nz:
-		dec TXZCount		
-		rjmp SPI_rstart
-
-
-		
 	SPI_TX:
 
 	out SPCR, zeroreg		;disable hardware SPI
 	sbi PORTB, P_SCK		;pull up SCK to send D/C SPI signal
 	out SPCR, spenreg		;enable hardware SPI
-	out SPDR,arg			;starting transfer
+	out SPDR,r16			;starting transfer
 	cbi PORTB, P_SCK		;release SCK, after start to reduce cpu cycles
 
 	;we can prepare new data here
 	dec TXCount
 	breq wait_TX_complete
-	;=========================
 
-	;rcall unpack_zeroes
-		cpi arg, 0
+		movw Zl,tmpZl
+		
+		cpi r16, 0
 		breq no_load
-		lpm arg, Z+
-		cpi arg, 0
+		lpm r16, Z+
+		cpi r16, 0
 		brne transmit
 		lpm TXZCount,Z+
+		;inc TXZCount
 		rjmp transmit
 
 		no_load:
 		dec TXZCount
 		brne transmit 
-		lpm arg,Z+
+		lpm r16,Z+
 		transmit:
+		
+		movw tmpZl,Zl 
 
-
-	;lpm arg,Z+
+	;ldi Zl,low(wait_TX_complete)
+	;ldi Zh,high(wait_TX_complete)
+	movw Zl,TXC_ptrl
+	icall
+	movw Zl,tmpZl
+	rjmp SPI_TX 
 	
+
+	;=================
 	wait_TX_complete:
-	in tmpreg, SPSR
-	sbrs tmpreg,SPIF
+	in r0, SPSR
+	sbrs r0,SPIF
 	rjmp wait_TX_complete
-	cp TXCount, zeroreg
-	brne SPI_TX
 	ret
 
-
 	;=================
-
-	;=================
-	LCD_goto_XY:
+	Goto_XY_LCD:
+	cbi PORTB,P_MOSI
 	;.def TXXpos = r10
 	;.def TXYpos = r11
 
-	;=== set 
+	;=== set x position 0..95
 	;=== low 4 bits
 	;load position
-	push arg
-	push TXRowCount
-	clr TXRowCount
-	cbi PORTB,P_MOSI
-	mov arg, TXXpos
-	andi arg, 0x0F
+	mov tmpregl, TXXpos
+	andi tmpregl, 0x0F
 	inc TXCount
 	rcall SPI_TX
 	;=== high 3 bits
-	mov arg, TXXpos
-	swap arg
-	andi arg, 0x0F
-	ori arg,0x10
+	mov tmpregl, TXXpos
+	swap tmpregl
+	andi tmpregl, 0x07
+	ori tmpregl,0x10
 	inc TXCount
 	rcall SPI_TX
 
-	;=== set 
-	mov arg,TXYpos //load position
-	ori arg,0xB0 ; y2..0 (0..7)
+		;=== set y position 0..7
+	cbi PORTB,P_MOSI
+	mov tmpregl,TXYpos //load position
+	andi tmpregl,0x07
+	ori tmpregl,0xB0 ; y2..0 (0..7)
 	inc TXCount
-	rcall SPI_TX
-	pop TXRowCount
-	pop arg
+	rcall SPI_TX 
+
 	ret
 
 
@@ -418,55 +388,25 @@ cikl_pause_t:
 	pop		r24
 	ret
 
-;==== PROGRAM FLASH MEMORY DATA SEGMENT =======================================
+
 .CSEG
 LCD_init:
-.db 4,0, LC_nallon_dis,LC_pwron,LC_fillall_dis,LC_nor_dis;5
+.db 4,0, LC_nallon_dis,LC_fillall_dis,LC_nor_dis,LC_pwron;5
 
-Pattern:
-.db 4, 4
-.db 0x01,0x03,0x7,0x0F,0x1F,0x3F,0x7F,0xFF,0x03,0x0F,0x3F,0xFF,0x03,0x0F,0x3F,0xFF
-.db 0xFF,0xFF,0xFF,0xFF
-/*
-Pattern1:
-.db 5, 4
-.db 0x03,0x00,0x03,0xFF
-.db 0x03,0x00,0x03,0xFF
-.db 0x03,0x00,0x03,0xFF
-.db 0x03,0x00,0x03,0xFF
-.db 0xFF,0xFF,0xFF,0xFF
+LCD_data:
+.db 8,0, 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00 ;9
 
-Pattern2:
-.db 5, 4
-.db 0x00,0x03,0xFF,0x03
-.db 0x00,0x03,0xFF,0x03
-.db 0x00,0x03,0xFF,0x03
-.db 0x00,0x03,0xFF,0x03
-.db 0xFF,0xFF,0xFF,0x03
+LCD_nop:
+.db 96,4, 0, 96 ;96
 
-Pattern3:
-.db 5,3
-.db 0xFF,0xFF ,0x00, 11, 0xFF,0xFF 
+LCD_full:
+.db 5,0, 0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA
 
-Pattern4:
-.db 96,3
-.db 0x00, 93, 0xFF, 0x00, 96, 0xFF,0x00, 96, 0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
-*/
 
-LCD_sp:
-.db 1,0
-.db 0x00,1, 0xFF,0xFF; 96 ;96
+LCD_test:
+.db 4,2, 1,2,3,4,5,6,7,8
 
-LCD_clrline:
-.db 96,0, 0x00,192
-
-LCD_clr:
-.db 96,8
-.db 0x00, 192, 0x00, 192, 0x00, 192, 0x00, 192, 0x00, 192, 0xFF,0xFF; 96 ;96
-
-.include "data_fm.inc"
-
-;==== RAM MEMORY DATA SEGMENT ======================================================================
-.DSEG 
-TXCountMem: .byte 1 
-TXRowCountMem: .byte 1 
+Strelka:
+.db 4, 0 
+.db 0x00, 1, 0x80, 0xC0, 0xE0, 0xFF
+.db 0x01, 0x03, 0x07, 0x0F
