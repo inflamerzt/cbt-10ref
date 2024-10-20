@@ -19,6 +19,12 @@ reset:
 	ldi		tmpreg, high(RAMEND)
 	out		SPH, tmpreg
 
+
+	; set clock frequency 1 MHz
+	;ldi		r24, 0b10000000
+	;ldi		r25, 0b00000011		; Clock Division Factor = 8	F = 1 MHz
+	;sts		CLKPR, r24
+	;sts		CLKPR, r25
 	;sei
 	
 	;=init predefined registers
@@ -67,6 +73,10 @@ reset:
 
 	LCD_cmd LCD_init
 	
+	;set ;- inverse display
+	clt ;- normal display
+	bld controlreg, inv_dis
+
 	LCD_XY 0,0
 	LCD_dat LCD_clr
 
@@ -100,31 +110,58 @@ reset:
 	;test here
 	;===========================================
 	
+	;set ;- inverse display
+	clt ;- normal display
+	bld controlreg, inv_dis
+	
+	
 	LCD_XY 0,0
-	LCD_dat 
+	;.include "digits.inc"
+	;.include "big_digits.inc"
+	;LCD_dat RAD_BIG
+	;LCD_dat RAD_0
+	;LCD_dat RAD_1
+	;LCD_dat RAD_2
+	;LCD_dat RAD_3
+	;LCD_dat RODGER
+	;LCD_XY 0,4
+	;LCD_dat RODGER_inv
+	;LCD_dat pausa
+	;LCD_dat plav
+	;LCD_dat summa
+	;LCD_dat cps
+	;LCD_dat mkrh
+	;LCD_dat batter
+	;LCD_dat Timer
+	;LCD_dat Alfa  
+	;LCD_dat  beta
+	;LCD_dat gamma
+	;LCD_dat summa_ravno
+	;LCD_dat result
+	;LCD_dat rc
+	;LCD_dat grom_shek
+	;LCD_dat zvuk_opov ; not displays correctly
+	;LCD_dat fon_porog
+	;LCD_dat podsvetka ; not displays correctly
+	;LCD_dat vkl
+	;LCD_dat vblkl
+	;LCD_dat mkr
+	;LCD_dat minus
+	;LCD_dat plus
+	;LCD_dat nastroiki_datchika ; needs to be reformated (pack data)
+	LCD_dat strelka
+
+
+
+
+
 
 	;===========================================
 
 	loop:
 	nop
 	rjmp loop
-/*
-	unpack_zeroes:
-		cpi arg, 0
-		breq no_load
-		lpm arg, Z+
-		cpi arg, 0
-		brne transmit
-		lpm TXZCount,Z+
-		rjmp transmit
 
-		no_load:
-		dec TXZCount
-		brne transmit 
-		lpm arg,Z+
-		transmit:
-	ret
-	*/
 
 	; Pepare SPI data
 	SPI_start:
@@ -192,13 +229,18 @@ reset:
 	sbi PORTB, P_SCK		;pull up SCK to send D/C SPI signal
 	out SPCR, spenreg		;enable hardware SPI
 	
-	;sbic PORTB,P_MOSI
-	;ldi tmpreg, 0xFF
-	;sbic PORTB, P_MOSI
-	;out SPDR,tmpreg
+	sbis PORTB,P_MOSI
+	rjmp no_inv
+	bst controlreg,inv_dis
+	brtc no_inv
+	mov tmpreg,arg
+	com tmpreg 
+	out SPDR,tmpreg ;starting transfer
+	rjmp inv_end			
 
-	;sbis PORTB, P_MOSI
+	no_inv:
 	out SPDR,arg			;starting transfer
+	inv_end:
 	cbi PORTB, P_SCK		;release SCK, after start to reduce cpu cycles
 
 	;we can prepare new data here
@@ -360,9 +402,7 @@ Pattern5:
 .db 0xff,0xff,0xff,0xff
 .db 0xff,0xff,0x00,2
 
-
-
-
+.include "data.inc"
 
 
 ;==== RAM MEMORY DATA SEGMENT ======================================================================
