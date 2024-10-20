@@ -59,7 +59,7 @@ reset:
 	.ifndef DBG
 	cbi		PORTD,DDD7			; к земле RES
 	rcall	pause_10ms ;100ms
-	;rcall	pause_100ms ;uncomment if 10ms is unstable
+	rcall	pause_100ms ;uncomment if 10ms is unstable
 	sbi		PORTD,DDD7			; подтяжка RES
 	rcall	pause_10ms	//delay 2500ns
 	.endif
@@ -67,63 +67,41 @@ reset:
 
 	LCD_cmd LCD_init
 	
-
-	;== clear screen loop 9 lines
 	LCD_XY 0,0
-	;ldi tmpreg, 5
-	;sbi PORTB,P_MOSI
-	;clr_scr:
-	;push tmpreg
-	
-	;LCD_dat LCD_clr
-	LCD_dat LCD_clrline
-	LCD_dat LCD_clrline
-	LCD_dat LCD_clrline
-	LCD_dat LCD_clrline
-	LCD_dat LCD_clrline
-	LCD_dat LCD_clrline
-	LCD_dat LCD_clrline
-	LCD_dat LCD_clrline
-	LCD_dat LCD_clrline
-	;pop tmpreg
-	;dec tmpreg
-	;brne clr_scr
-	/*
+	LCD_dat LCD_clr
+
+
+/*
 	LCD_XY 0,0
-	LCD_dat MINI_CIFRA_0
-	LCD_dat MINI_CIFRA_0
 
-
-	LCD_XY 0,1
-	LCD_dat CIFRA_8
-	LCD_XY 8,1
-	LCD_dat ZAPITAY
-	LCD_XY 10,1
-	LCD_dat CIFRA_0
-	*/
-	/*
 	LCD_XY 30,0
 	LCD_dat Pattern
 
 	
-	LCD_XY 20,8
+	LCD_XY 20,0
 	LCD_dat Pattern1
-	
-	LCD_XY 30,7
-	LCD_dat Pattern3
-	
 
-	LCD_XY 0,5
-	LCD_dat Pattern4
-	;LCD_dat Pattern4
-	;LCD_dat Pattern4
+	LCD_XY 50,0
+	LCD_dat Pattern2
+	
+	LCD_XY 80,0
+	LCD_dat Pattern3
+
+	LCD_XY 0,0
+	LCD_dat Pattern5
+	
 	*/
+	;LCD_XY 0,0
+	;LCD_dat Pattern4
+	;LCD_dat Pattern4
+	;LCD_dat Pattern4
+	
 	;===========================================
 	;test here
 	;===========================================
 	
 	LCD_XY 0,0
-	.include "test.inc"
+	LCD_dat 
 
 	;===========================================
 
@@ -178,11 +156,18 @@ reset:
 		sbi PORTB,P_MOSI
 		lds TXCount, TXCountMem
 		
+		
 		;if arg != 0
 		;cpi arg,0   ;zero check
 		;breq zero_arg ;zero check
+		
 		cp TXZCount, zeroreg
-		brne SPrS_nz
+		breq argnz
+		dec TXZCount
+		breq argnz
+		rjmp SPrS_nz
+
+		argnz:
 		lpm arg,Z+
 		cp arg, zeroreg
 		brne SPI_rstart
@@ -190,7 +175,13 @@ reset:
 		lpm TXZCount,Z+
 		rjmp SPI_rstart		
 		SPrS_nz:
-		dec TXZCount		
+		;ldi tmpreg, 0x01
+		;
+		
+		;dec TXZCount
+		;cpse TXZCount, zeroreg
+		;inc TXZCount
+		;lpm arg,Z+		
 		rjmp SPI_rstart
 
 
@@ -200,6 +191,13 @@ reset:
 	out SPCR, zeroreg		;disable hardware SPI
 	sbi PORTB, P_SCK		;pull up SCK to send D/C SPI signal
 	out SPCR, spenreg		;enable hardware SPI
+	
+	;sbic PORTB,P_MOSI
+	;ldi tmpreg, 0xFF
+	;sbic PORTB, P_MOSI
+	;out SPDR,tmpreg
+
+	;sbis PORTB, P_MOSI
 	out SPDR,arg			;starting transfer
 	cbi PORTB, P_SCK		;release SCK, after start to reduce cpu cycles
 
@@ -209,6 +207,7 @@ reset:
 	;=========================
 
 	;rcall unpack_zeroes
+
 		cpi arg, 0
 		breq no_load
 		lpm arg, Z+
@@ -218,10 +217,15 @@ reset:
 		rjmp transmit
 
 		no_load:
+		cp TXZCount, zeroreg
+		breq preload
+
 		dec TXZCount
 		brne transmit 
+		preload:
 		lpm arg,Z+
 		transmit:
+
 
 
 	;lpm arg,Z+
@@ -310,11 +314,22 @@ cikl_pause_t:
 LCD_init:
 .db 4,0, LC_nallon_dis,LC_pwron,LC_fillall_dis,LC_nor_dis;5
 
+LCD_sp:
+.db 1,0
+.db 0x00,1, 0xFF,0xFF; 96 ;96
+
+LCD_clrline:
+.db 96,0, 0x00,192
+
+LCD_clr:
+.db 96,9
+.db 0x00, 192, 0x00, 192, 0x00, 192, 0x00, 192, 0x00, 192, 0x00,192; 96 ;96
+
 Pattern:
 .db 4, 4
 .db 0x01,0x03,0x7,0x0F,0x1F,0x3F,0x7F,0xFF,0x03,0x0F,0x3F,0xFF,0x03,0x0F,0x3F,0xFF
 .db 0xFF,0xFF,0xFF,0xFF
-/*
+
 Pattern1:
 .db 5, 4
 .db 0x03,0x00,0x03,0xFF
@@ -338,20 +353,17 @@ Pattern3:
 Pattern4:
 .db 96,3
 .db 0x00, 93, 0xFF, 0x00, 96, 0xFF,0x00, 96, 0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
-*/
 
-LCD_sp:
-.db 1,0
-.db 0x00,1, 0xFF,0xFF; 96 ;96
+Pattern5:
+.db 4,2
+.db 0xFF,0xFF,0x00,2
+.db 0xff,0xff,0xff,0xff
+.db 0xff,0xff,0x00,2
 
-LCD_clrline:
-.db 96,0, 0x00,192
 
-LCD_clr:
-.db 96,8
-.db 0x00, 192, 0x00, 192, 0x00, 192, 0x00, 192, 0x00, 192, 0xFF,0xFF; 96 ;96
 
-.include "data_fm.inc"
+
+
 
 ;==== RAM MEMORY DATA SEGMENT ======================================================================
 .DSEG 
