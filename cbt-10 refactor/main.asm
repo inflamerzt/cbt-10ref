@@ -62,6 +62,20 @@ reset:
 	out SPSR, tmpreg
 	;--------------------------------
 	
+	;===== enable timer0 and configure pwm
+	ldi tmpreg, (1<<CS00)
+	out TCCR0B,tmpreg
+	
+	sbi DDRD, PD5 ; set compare output pin as out
+
+	ldi tmpreg,0x1F 
+	out OCR0B,tmpreg
+
+	ldi tmpreg, (2<<COM0B0)|(3<<WGM00)
+	out TCCR0A, tmpreg
+
+
+
 	;======= delays temporary disabled
 	.ifndef DBG
 	cbi		PORTD,DDD7			; к земле RES
@@ -127,7 +141,17 @@ reset:
 	;LCD_dat summa
 	;LCD_dat cps
 	;LCD_dat mkrh
-	;LCD_dat batter
+	;------------LCD_dat batter
+	LCD_dat batter_cap
+	LCD_dat batter_nofill
+	LCD_dat batter_fill
+	LCD_dat batter_nofill
+	LCD_dat batter_fill
+	LCD_dat batter_nofill
+	LCD_dat batter_fill
+	LCD_dat batter_nofill
+	LCD_dat batter_fill
+	LCD_dat batter_bcap
 	;LCD_dat Timer
 	;LCD_dat Alfa  
 	;LCD_dat  beta
@@ -161,10 +185,10 @@ reset:
 
 	; Pepare SPI data
 	SPI_start:
-		clr TXZCount
 		lpm TXCount,Z+
 		lpm TXRowCount,Z+
 		SPI_start_defined: ; if TXCount,TXRowCount preloaded possible reduce size
+		clr TXZCount
 		lpm arg,Z+
 
 		cp arg,zeroreg
@@ -338,7 +362,7 @@ cikl_pause_t:
 ;==== PROGRAM FLASH MEMORY DATA SEGMENT =======================================
 .CSEG
 LCD_init:
-.db 5,0, LC_nallon_dis,LC_pwron,LC_fillall_dis,LC_nor_dis, LC_rev_dis, 0xFF;5
+.db 5,0, LC_nallon_dis,LC_pwron,LC_fillall_dis,LC_nor_dis, LC_nrev_dis, 0xFF;5
 
 LCD_sp:
 .db 1,0
