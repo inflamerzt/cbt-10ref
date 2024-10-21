@@ -7,6 +7,10 @@
 .equ LC_nfillall_dis = 0xAE ;display ram
 .equ LC_fillall_dis = 0xAF ;hide ram
 
+;original display settings
+.equ LC_nrev_dis = 0xA0
+.equ LC_rev_dis = 0xA1
+
 
 	;Установка линии начала сканирования 0 1 S5 S4 S3 S2 S1 S0 
 	;Установка линии начала сканирования S:0?Y?63

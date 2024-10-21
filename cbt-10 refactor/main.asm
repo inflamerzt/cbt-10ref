@@ -145,7 +145,7 @@ reset:
 	;LCD_dat minus
 	;LCD_dat plus
 	;LCD_dat nastroiki_datchika ; needs to be reformated (pack data)
-	LCD_dat strelka
+	;LCD_dat strelka
 
 
 
@@ -338,7 +338,7 @@ cikl_pause_t:
 ;==== PROGRAM FLASH MEMORY DATA SEGMENT =======================================
 .CSEG
 LCD_init:
-.db 4,0, LC_nallon_dis,LC_pwron,LC_fillall_dis,LC_nor_dis;5
+.db 5,0, LC_nallon_dis,LC_pwron,LC_fillall_dis,LC_nor_dis, LC_rev_dis, 0xFF;5
 
 LCD_sp:
 .db 1,0
