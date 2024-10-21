@@ -61,58 +61,54 @@ reset:
 	ori tmpreg, (1<<SPI2x)
 	out SPSR, tmpreg
 	;--------------------------------
+	
 	;======= delays temporary disabled
 	.ifndef DBG
 	cbi		PORTD,DDD7			; к земле RES
+	
+	;======= here is time space to do something until display resets
+	;
+	;
+	
 	rcall	pause_10ms ;100ms
 	rcall	pause_100ms ;uncomment if 10ms is unstable
 	sbi		PORTD,DDD7			; подтяжка RES
 	rcall	pause_10ms	//delay 2500ns
+	
+	;======= here is time space to do something until display resets
+	;
+	;
+
 	.endif
 
 
 	LCD_cmd LCD_init
 	
+	/*
 	;set ;- inverse display
 	clt ;- normal display
 	bld controlreg, inv_dis
+	*/
+
+	LCD_norm
 
 	LCD_XY 0,0
 	LCD_dat LCD_clr
 
 
-/*
-	LCD_XY 0,0
 
-	LCD_XY 30,0
-	LCD_dat Pattern
-
-	
-	LCD_XY 20,0
-	LCD_dat Pattern1
-
-	LCD_XY 50,0
-	LCD_dat Pattern2
-	
-	LCD_XY 80,0
-	LCD_dat Pattern3
-
-	LCD_XY 0,0
-	LCD_dat Pattern5
-	
-	*/
-	;LCD_XY 0,0
-	;LCD_dat Pattern4
-	;LCD_dat Pattern4
-	;LCD_dat Pattern4
 	
 	;===========================================
 	;test here
 	;===========================================
 	
+	/*
 	;set ;- inverse display
 	clt ;- normal display
 	bld controlreg, inv_dis
+	*/
+	LCD_norm
+	;LCD_inv
 	
 	
 	LCD_XY 0,0
@@ -170,7 +166,7 @@ reset:
 		lpm TXRowCount,Z+
 		SPI_start_defined: ; if TXCount,TXRowCount preloaded possible reduce size
 		lpm arg,Z+
-		;rcall unpack_zeroes
+
 		cp arg,zeroreg
 		brne SPSnz
 		lpm TXZCount,Z+
@@ -194,10 +190,6 @@ reset:
 		lds TXCount, TXCountMem
 		
 		
-		;if arg != 0
-		;cpi arg,0   ;zero check
-		;breq zero_arg ;zero check
-		
 		cp TXZCount, zeroreg
 		breq argnz
 		dec TXZCount
@@ -212,13 +204,7 @@ reset:
 		lpm TXZCount,Z+
 		rjmp SPI_rstart		
 		SPrS_nz:
-		;ldi tmpreg, 0x01
-		;
-		
-		;dec TXZCount
-		;cpse TXZCount, zeroreg
-		;inc TXZCount
-		;lpm arg,Z+		
+	
 		rjmp SPI_rstart
 
 
@@ -247,8 +233,6 @@ reset:
 	dec TXCount
 	breq wait_TX_complete
 	;=========================
-
-	;rcall unpack_zeroes
 
 		cpi arg, 0
 		breq no_load
@@ -288,7 +272,7 @@ reset:
 	;.def TXXpos = r10
 	;.def TXYpos = r11
 
-	;=== set 
+	;=== set X
 	;=== low 4 bits
 	;load position
 	push arg
@@ -307,7 +291,7 @@ reset:
 	inc TXCount
 	rcall SPI_TX
 
-	;=== set 
+	;=== set Y
 	mov arg,TXYpos //load position
 	ori arg,0xB0 ; y2..0 (0..7)
 	inc TXCount
@@ -366,6 +350,8 @@ LCD_clrline:
 LCD_clr:
 .db 96,9
 .db 0x00, 192, 0x00, 192, 0x00, 192, 0x00, 192, 0x00, 192, 0x00,192; 96 ;96
+;------------- !!!!!!!!!!!!!!!!!!!       need to test with pattern below:
+.db 0x00, 255, 0x00, 255, 0x00, 255, 0x00, 255
 
 Pattern:
 .db 4, 4

@@ -81,6 +81,16 @@
 	rcall LCD_goto_XY
 .endmacro
 
+.macro LCD_norm ; put symbols on LCD normal
+	clt ;- normal display
+	bld controlreg, inv_dis
+.endmacro
+
+.macro LCD_inv ; put symbols on LCD inverted
+	set ;- inverse display
+	bld controlreg, inv_dis
+.endmacro
+
 ;.CSEG
 ;.ORG $0000
 	rjmp	reset				;rjmp RESET ; Reset Handler
