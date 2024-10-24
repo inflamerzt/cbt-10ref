@@ -102,8 +102,24 @@ reset:
 	ldi tmpreg, (1<<WGM12)|(3<<CS10)
 	sts TCCR1B, tmpreg
 
-	sei ;------------ temporary for test
 
+
+
+	;==================  enable timer2 /systick, realtime counter
+
+	;timer configuration counter = 125 (124), prescaller 64 - period = 1/8 seconds
+	;need to compensate -73us per second
+	 ldi tmpreg, 121
+	 sts OCR2A,tmpreg
+	 ldi tmpreg, (1<<WGM21)
+	 sts TCCR2A,tmpreg 
+	 ldi tmpreg, (7<<CS20)
+	 sts TCCR2B,tmpreg 
+	 ldi tmpreg,(1<<OCIE2A)
+	 sts TIMSK2,tmpreg
+
+	 sei ;------------ temporary for test
+	 
 	;======= delays temporary disabled
 	.ifndef DBG
 	cbi		PORTD,DDD7			; к земле RES

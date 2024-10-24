@@ -107,7 +107,7 @@
 		reti ;rjmp PCINT1 ; PCINT1 Handler
 		reti ;rjmp PCINT2 ; PCINT2 Handler
 		reti ;rjmp WDT ; Watchdog Timer Handler
-		reti ;rjmp buzz_switch ;rjmp TIM2_COMPA ; Timer2 Compare A Handler
+		rjmp TIM2_COMPA ; Timer2 Compare A Handler
 		reti ;rjmp TIM2_COMPB ; Timer2 Compare B Handler
 		reti ;rjmp	buzz_beep			;rjmp TIM2_OVF ; Timer2 Overflow Handler
 		reti ;rjmp TIM1_CAPT ; Timer1 Capture Handler
@@ -160,5 +160,11 @@ pop tmpreg
 nop
 ;cbi diod
 ;sbi capacitor
+
+reti
+
+TIM2_COMPA: ; Timer2 Compare A Handler
+
+nop
 
 reti
