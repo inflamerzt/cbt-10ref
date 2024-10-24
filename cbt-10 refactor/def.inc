@@ -11,6 +11,9 @@
 .equ LC_nrev_dis = 0xA0
 .equ LC_rev_dis = 0xA1
 
+; TIM1 prescaller x/16
+.equ DCboost_period = 2500  ;160 ms
+.equ DCboost_pulse = 8 ;512us - 22us (interrupt delay)
 
 	;Установка линии начала сканирования 0 1 S5 S4 S3 S2 S1 S0 
 	;Установка линии начала сканирования S:0?Y?63
@@ -108,8 +111,8 @@
 		reti ;rjmp TIM2_COMPB ; Timer2 Compare B Handler
 		reti ;rjmp	buzz_beep			;rjmp TIM2_OVF ; Timer2 Overflow Handler
 		reti ;rjmp TIM1_CAPT ; Timer1 Capture Handler
-		reti ;rjmp TIM1_COMPA ; Timer1 Compare A Handler
-		reti ;rjmp	Dergati_IRF840		;rjmp TIM1_COMPB ; Timer1 Compare B Handler
+		rjmp TIM1_COMPA ; Timer1 Compare A Handler
+		rjmp TIM1_COMPB ; Timer1 Compare B Handler
 		reti ;rjmp TIM1_OVF ; Timer1 Overflow Handler
 		reti ;rjmp TIM0_COMPA ; Timer0 Compare A Handler
 		reti ;rjmp TIM0_COMPB ; Timer0 Compare B Handler
@@ -124,3 +127,38 @@
 		reti ;rjmp TWI ; 2-wire Serial Interface Handler
 		reti ;rjmp SPM_RDY ; Store Program Memory Ready Handler
 
+
+TIM1_COMPA: ; Timer1 Compare A Handler
+nop
+;discharge cap
+;sbi transistor
+;small delay
+;cbi transistor or keep transistor opened to keep mosfet closed in noisy environment
+reti
+
+TIM1_COMPB: ; Timer1 Compare B Handler
+;sbis suppressor pin
+
+;cbi transistor
+;cbi capacitor
+;sbi diod
+
+
+push tmpreg
+in tmpreg, SREG
+push tmpreg
+
+;charge cap 20us and pull up
+ldi tmpreg, 4; make X additional cycles to get 20us delay
+wait_charge:
+dec tmpreg
+brne wait_charge
+
+pop tmpreg
+out SREG,tmpreg
+pop tmpreg
+nop
+;cbi diod
+;sbi capacitor
+
+reti

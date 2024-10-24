@@ -5,12 +5,19 @@
 ; Author : inflamer
 ;
 
+
+;Booster timings
+;Charge Capacitor 20uS
+; test conditions 500Hz
+
+
 ;.equ DBG = 1  ;comment before flash
 
 .include "def.inc"
 
 reset:
 /*stackpointer init*/
+	cli
 	clr r0
 	out SREG,r0
 
@@ -71,10 +78,31 @@ reset:
 	ldi tmpreg,0x1F 
 	out OCR0B,tmpreg
 
-	ldi tmpreg, (2<<COM0B0)|(3<<WGM00)
+	ldi tmpreg, (2<<COM0B0)|(3<<WGM00) ; (3<<COM0B0) if out must be inverted
 	out TCCR0A, tmpreg
 
+	;===== enable timer1 and configure interrupts
 
+
+	ldi tmpregh, high(DCBoost_period)
+	ldi tmpreg, low(DCBoost_period)
+	sts OCR1AH, tmpregh
+	sts OCR1AL, tmpreg
+
+
+	ldi tmpregh, high(DCBoost_period-DCBoost_pulse)
+	ldi tmpreg, low(DCBoost_period-DCBoost_pulse)
+	sts OCR1BH, tmpregh
+	sts OCR1BL, tmpreg
+
+
+	ldi tmpreg, (1<<OCIE1A) | (1<<OCIE1B)
+	sts TIMSK1, tmpreg
+
+	ldi tmpreg, (1<<WGM12)|(3<<CS10)
+	sts TCCR1B, tmpreg
+
+	sei ;------------ temporary for test
 
 	;======= delays temporary disabled
 	.ifndef DBG
