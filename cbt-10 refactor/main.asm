@@ -21,6 +21,8 @@ reset:
 	clr r0
 	out SREG,r0
 
+	clr tmpcount
+
 	ldi		tmpreg, low(RAMEND)
 	out		SPL, tmpreg
 	ldi		tmpreg, high(RAMEND)
@@ -46,10 +48,16 @@ reset:
 
 	;--------------------------
 	;=GPIO init
-	ldi tmpreg, (1<<P_LCD_RES)
+	ldi tmpreg, (1<<P_LCD_RES)|(1<<P_bDiode)|(1<<P_bCap)|(1<<P_bTrans)
 	out DDRD,tmpreg
 	sbi PORTD, P_LCD_RES
 	cbi PORTD, P_LCD_RES
+
+	out DDRC, zeroreg
+
+	;sbi PORTC, P_boostFB
+	
+
 
 	;delay for LCD reset must be implemented 2500ns pull low, 2500ns after reset
 	; 10 - 100ms hx1230 recomendation 
@@ -75,7 +83,7 @@ reset:
 	
 	sbi DDRD, PD5 ; set compare output pin as out
 
-	ldi tmpreg,0x1F 
+	ldi tmpreg,0xEF 
 	out OCR0B,tmpreg
 
 	ldi tmpreg, (2<<COM0B0)|(3<<WGM00) ; (3<<COM0B0) if out must be inverted
@@ -108,8 +116,8 @@ reset:
 	;==================  enable timer2 /systick, realtime counter
 
 	;timer configuration counter = 125 (124), prescaller 64 - period = 1/8 seconds
-	;need to compensate -73us per second
-	 ldi tmpreg, 121
+	;need to compensate -73us per second /121
+	 ldi tmpreg, 125
 	 sts OCR2A,tmpreg
 	 ldi tmpreg, (1<<WGM21)
 	 sts TCCR2A,tmpreg 
@@ -463,3 +471,5 @@ Pattern5:
 .DSEG 
 TXCountMem: .byte 1 
 TXRowCountMem: .byte 1 
+
+qsecond: .byte 1 ; 1/4 second counter

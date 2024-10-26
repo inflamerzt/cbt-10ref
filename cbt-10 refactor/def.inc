@@ -33,6 +33,14 @@
 .equ P_MISO = PB4
 .equ P_SCK = PB5
 
+.equ DDR_booster = DDRD
+.equ PORT_booster = PORTD
+.equ P_bDiode = PD0
+.equ P_bCap = PD1
+.equ P_bTrans = PD2
+
+.equ P_boostFB = PC5
+
 .equ P_LCD_RES = PD7
 
 ; controlreg
@@ -55,6 +63,8 @@
 
 .def TXCount = r18
 .def TXRowCount = r19
+
+.def tmpcount = r20
 
 .def TXXpos = r22
 .def TXYpos = r23
@@ -134,15 +144,29 @@ nop
 ;sbi transistor
 ;small delay
 ;cbi transistor or keep transistor opened to keep mosfet closed in noisy environment
+
+cbi PORT_booster, P_bCap
+sbi PORT_booster, P_bTrans
+nop
+nop
+cbi PORT_booster, P_bTrans
+
+;cbi PORTD, PD1
 reti
 
 TIM1_COMPB: ; Timer1 Compare B Handler
-;sbis suppressor pin
+;sbic suppressor pin
+sbic PINC,P_boostFB
+reti
 
 ;cbi transistor
 ;cbi capacitor
 ;sbi diod
+cbi PORT_booster, P_bTrans
+cbi PORT_booster, P_bCap
+sbi PORT_booster, P_bDiode
 
+;sbi portd, pd1
 
 push tmpreg
 in tmpreg, SREG
@@ -161,10 +185,50 @@ nop
 ;cbi diod
 ;sbi capacitor
 
+cbi PORT_booster, P_bDiode
+sbi PORT_booster, P_bCap
+
+
 reti
 
 TIM2_COMPA: ; Timer2 Compare A Handler
 
-nop
+push tmpreg
+in tmpreg, SREG
+push tmpreg
 
+lds tmpreg, qsecond
+inc tmpreg
+sbrs tmpreg, 3
+rjmp end_TIM2_COMPA
+;every second tick
+clr tmpreg
+push tmpreg
+
+
+
+pop tmpreg
+
+/*
+push tmpreg 
+push tmpregh
+
+ ;change pin state every second
+ in tmpreg, PORTD
+ ldi tmpregh, (1<<PD1)
+ eor tmpreg, tmpregh
+ out PORTD,tmpreg
+
+pop tmpregh
+pop tmpreg
+*/
+
+
+ end_TIM2_COMPA:
+
+sts qsecond,tmpreg
+
+pop tmpreg
+out SREG,tmpreg
+pop tmpreg
 reti
