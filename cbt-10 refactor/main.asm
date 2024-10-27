@@ -15,6 +15,8 @@
 
 .include "def.inc"
 
+.include "int.inc"
+
 reset:
 /*stackpointer init*/
 	cli

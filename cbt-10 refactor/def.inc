@@ -12,7 +12,8 @@
 .equ LC_rev_dis = 0xA1
 
 ; TIM1 prescaller x/16
-.equ DCboost_period = 2500  ;160 ms
+;160 ms must be 5ms to 1s count 90...16000 0x50...0x5000 
+.equ DCboost_period = 0x50 ;small timing = fast boost  
 .equ DCboost_pulse = 8 ;512us - 22us (interrupt delay)
 
 	;Установка линии начала сканирования 0 1 S5 S4 S3 S2 S1 S0 
@@ -136,99 +137,3 @@
 		reti ;rjmp ANA_COMP ; Analog Comparator Handler
 		reti ;rjmp TWI ; 2-wire Serial Interface Handler
 		reti ;rjmp SPM_RDY ; Store Program Memory Ready Handler
-
-
-TIM1_COMPA: ; Timer1 Compare A Handler
-nop
-;discharge cap
-;sbi transistor
-;small delay
-;cbi transistor or keep transistor opened to keep mosfet closed in noisy environment
-
-cbi PORT_booster, P_bCap
-sbi PORT_booster, P_bTrans
-nop
-nop
-cbi PORT_booster, P_bTrans
-
-;cbi PORTD, PD1
-reti
-
-TIM1_COMPB: ; Timer1 Compare B Handler
-;sbic suppressor pin
-sbic PINC,P_boostFB
-reti
-
-;cbi transistor
-;cbi capacitor
-;sbi diod
-cbi PORT_booster, P_bTrans
-cbi PORT_booster, P_bCap
-sbi PORT_booster, P_bDiode
-
-;sbi portd, pd1
-
-push tmpreg
-in tmpreg, SREG
-push tmpreg
-
-;charge cap 20us and pull up
-ldi tmpreg, 4; make X additional cycles to get 20us delay
-wait_charge:
-dec tmpreg
-brne wait_charge
-
-pop tmpreg
-out SREG,tmpreg
-pop tmpreg
-nop
-;cbi diod
-;sbi capacitor
-
-cbi PORT_booster, P_bDiode
-sbi PORT_booster, P_bCap
-
-
-reti
-
-TIM2_COMPA: ; Timer2 Compare A Handler
-
-push tmpreg
-in tmpreg, SREG
-push tmpreg
-
-lds tmpreg, qsecond
-inc tmpreg
-sbrs tmpreg, 3
-rjmp end_TIM2_COMPA
-;every second tick
-clr tmpreg
-push tmpreg
-
-
-
-pop tmpreg
-
-/*
-push tmpreg 
-push tmpregh
-
- ;change pin state every second
- in tmpreg, PORTD
- ldi tmpregh, (1<<PD1)
- eor tmpreg, tmpregh
- out PORTD,tmpreg
-
-pop tmpregh
-pop tmpreg
-*/
-
-
- end_TIM2_COMPA:
-
-sts qsecond,tmpreg
-
-pop tmpreg
-out SREG,tmpreg
-pop tmpreg
-reti
