@@ -11,7 +11,7 @@
 ; test conditions 500Hz
 
 
-;.equ DBG = 1  ;comment before flash
+.equ DBG = 1  ;comment before flash
 
 .include "def.inc"
 
@@ -132,6 +132,66 @@ reset:
 	 sts TIMSK2,tmpreg
 
 	 sei ;------------ temporary for test
+
+	 ;ldi tmpreg, .size(sm_digits)
+	; fill pointers
+	;ldi XH,high(sm_digits)
+	;ldi XL,low(sm_digits)
+	set_ST_ptr sm_digits
+	
+
+
+	;ldi tmpregh,high(MINI_CIFRA_0)
+	;ldi tmpreg,low(MINI_CIFRA_0)
+	;st X+,tmpregh
+	;st X+,tmpreg
+	ST_ptr MINI_CIFRA_0
+
+	ldi tmpregh,high(MINI_CIFRA_1)
+	ldi tmpreg,low(MINI_CIFRA_1)
+	st X+,tmpregh
+	st X+,tmpreg
+
+	ldi tmpregh,high(MINI_CIFRA_2)
+	ldi tmpreg,low(MINI_CIFRA_2)
+	st X+,tmpregh
+	st X+,tmpreg
+
+	ldi tmpregh,high(MINI_CIFRA_3)
+	ldi tmpreg,low(MINI_CIFRA_3)
+	st X+,tmpregh
+	st X+,tmpreg
+
+	ldi tmpregh,high(MINI_CIFRA_4)
+	ldi tmpreg,low(MINI_CIFRA_4)
+	st X+,tmpregh
+	st X+,tmpreg
+
+	ldi tmpregh,high(MINI_CIFRA_5)
+	ldi tmpreg,low(MINI_CIFRA_5)
+	st X+,tmpregh
+	st X+,tmpreg
+
+	ldi tmpregh,high(MINI_CIFRA_6)
+	ldi tmpreg,low(MINI_CIFRA_6)
+	st X+,tmpregh
+	st X+,tmpreg
+
+	ldi tmpregh,high(MINI_CIFRA_7)
+	ldi tmpreg,low(MINI_CIFRA_7)
+	st X+,tmpregh
+	st X+,tmpreg
+
+	ldi tmpregh,high(MINI_CIFRA_8)
+	ldi tmpreg,low(MINI_CIFRA_8)
+	st X+,tmpregh
+	st X+,tmpreg
+
+	ldi tmpregh,high(MINI_CIFRA_9)
+	ldi tmpreg,low(MINI_CIFRA_9)
+	st X+,tmpregh
+	st X+,tmpreg
+
 	 
 	;======= delays temporary disabled
 	.ifndef DBG
@@ -140,6 +200,7 @@ reset:
 	;======= here is time space to do something until display resets
 	;
 	;
+
 	
 	rcall	pause_10ms ;100ms
 	rcall	pause_100ms ;uncomment if 10ms is unstable
@@ -478,3 +539,8 @@ TXCountMem: .byte 1
 TXRowCountMem: .byte 1 
 
 qsecond: .byte 1 ; 1/4 second counter
+
+;pointers
+sm_digits: .db 10
+digits: .db 10
+rad_anim: .db 3

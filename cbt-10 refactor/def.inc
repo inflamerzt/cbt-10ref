@@ -111,6 +111,20 @@
 	bld controlreg, inv_dis
 .endmacro
 
+.macro set_ST_ptr ;sets X regs for ST_ptr
+	ldi XH,high(@0)
+	ldi XL,low(@0)
+.endmacro
+
+.macro ST_ptr ;X must be set before
+	ldi tmpregh,high(@0)
+	ldi tmpreg,low(@0)
+	;st X+,tmpregh
+	;st X+,tmpreg
+	;make stxw procedure to reduce size of code
+	rcall stxw
+.endmacro
+
 ;.CSEG
 ;.ORG $0000
 	rjmp	reset				;rjmp RESET ; Reset Handler
@@ -139,3 +153,9 @@
 		reti ;rjmp ANA_COMP ; Analog Comparator Handler
 		reti ;rjmp TWI ; 2-wire Serial Interface Handler
 		reti ;rjmp SPM_RDY ; Store Program Memory Ready Handler
+
+stxw: 
+	st X+,tmpregh
+	st X+,tmpreg
+ret
+
