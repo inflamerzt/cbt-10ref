@@ -12,7 +12,8 @@
 .equ LC_rev_dis = 0xA1
 
 ; TIM1 prescaller x/16
-;160 ms must be 5ms to 1s count 90...16000 0x50...0x5000 
+;160 ms must be 5ms to 1s count 90...16000 0x50...0x5000
+ 
 .equ DCboost_period = 0x50 ;small timing = fast boost  
 .equ DCboost_pulse = 8 ;512us - 22us (interrupt delay)
 
@@ -46,6 +47,7 @@
 
 ; controlreg
 .equ inv_dis =0
+.equ sec_tick= 1
 ;============
 
 .def zeroreg = r2

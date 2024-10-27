@@ -50,14 +50,17 @@ reset:
 
 	;--------------------------
 	;=GPIO init
-	ldi tmpreg, (1<<P_LCD_RES)|(1<<P_bDiode)|(1<<P_bCap)|(1<<P_bTrans)
+	ldi tmpreg, (1<<P_LCD_RES)|(1<<P_bDiode)|(1<<P_bCap)|(1<<P_bTrans)|(1<<PD6)
 	out DDRD,tmpreg
 	sbi PORTD, P_LCD_RES
 	cbi PORTD, P_LCD_RES
 
 	out DDRC, zeroreg
 
-	;sbi PORTC, P_boostFB
+	
+	
+
+	;sbi PORTC, P_boostFB ; enable internal pullup for test only
 	
 
 
@@ -70,6 +73,7 @@ reset:
 	cbi DDR_SPI,P_MISO
 
 	sbi PORTD,P_LCD_RES
+
 
 	;ldi r16,(1<<MSTR)|(1<<SPE);|(1<<SPR0)
 	;out SPCR, spenreg
@@ -92,8 +96,7 @@ reset:
 	out TCCR0A, tmpreg
 
 	;===== enable timer1 and configure interrupts
-
-
+	
 	ldi tmpregh, high(DCBoost_period)
 	ldi tmpreg, low(DCBoost_period)
 	sts OCR1AH, tmpregh
@@ -119,11 +122,11 @@ reset:
 
 	;timer configuration counter = 125 (124), prescaller 64 - period = 1/8 seconds
 	;need to compensate -73us per second /121
-	 ldi tmpreg, 125
+	 ldi tmpreg, 121 ;126=15.34;125=15.46
 	 sts OCR2A,tmpreg
 	 ldi tmpreg, (1<<WGM21)
 	 sts TCCR2A,tmpreg 
-	 ldi tmpreg, (7<<CS20)
+	 ldi tmpreg, (6<<CS20) ;1/32 sec
 	 sts TCCR2B,tmpreg 
 	 ldi tmpreg,(1<<OCIE2A)
 	 sts TIMSK2,tmpreg
