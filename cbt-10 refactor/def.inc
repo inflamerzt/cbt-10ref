@@ -117,8 +117,8 @@
 .endmacro
 
 .macro ST_ptr ;X must be set before
-	ldi tmpregh,high(@0)
-	ldi tmpreg,low(@0)
+	ldi tmpregh,high(@0*2)
+	ldi tmpreg,low(@0*2)
 	;st X+,tmpregh
 	;st X+,tmpreg
 	;make stxw procedure to reduce size of code

@@ -11,7 +11,7 @@
 ; test conditions 500Hz
 
 
-.equ DBG = 1  ;comment before flash
+;.equ DBG = 1  ;comment before flash
 
 .include "def.inc"
 
@@ -59,8 +59,8 @@ reset:
 
 	
 	
-
-	;sbi PORTC, P_boostFB ; enable internal pullup for test only
+	;----------------- remove this string with booster enabled
+	sbi PORTC, P_boostFB ; enable internal pullup for test only
 	
 
 
@@ -133,66 +133,49 @@ reset:
 
 	 sei ;------------ temporary for test
 
-	 ;ldi tmpreg, .size(sm_digits)
 	; fill pointers
-	;ldi XH,high(sm_digits)
-	;ldi XL,low(sm_digits)
-	set_ST_ptr sm_digits
 	
+	
+	set_ST_ptr sm_digits
 
-
-	;ldi tmpregh,high(MINI_CIFRA_0)
-	;ldi tmpreg,low(MINI_CIFRA_0)
-	;st X+,tmpregh
-	;st X+,tmpreg
 	ST_ptr MINI_CIFRA_0
+	ST_ptr MINI_CIFRA_1
+	ST_ptr MINI_CIFRA_2
+	ST_ptr MINI_CIFRA_3
+	ST_ptr MINI_CIFRA_4
+	ST_ptr MINI_CIFRA_5
+	ST_ptr MINI_CIFRA_6
+	ST_ptr MINI_CIFRA_7
+	ST_ptr MINI_CIFRA_8
+	ST_ptr MINI_CIFRA_9
 
-	ldi tmpregh,high(MINI_CIFRA_1)
-	ldi tmpreg,low(MINI_CIFRA_1)
-	st X+,tmpregh
-	st X+,tmpreg
+	set_ST_ptr digits
 
-	ldi tmpregh,high(MINI_CIFRA_2)
-	ldi tmpreg,low(MINI_CIFRA_2)
-	st X+,tmpregh
-	st X+,tmpreg
-
-	ldi tmpregh,high(MINI_CIFRA_3)
-	ldi tmpreg,low(MINI_CIFRA_3)
-	st X+,tmpregh
-	st X+,tmpreg
-
-	ldi tmpregh,high(MINI_CIFRA_4)
-	ldi tmpreg,low(MINI_CIFRA_4)
-	st X+,tmpregh
-	st X+,tmpreg
-
-	ldi tmpregh,high(MINI_CIFRA_5)
-	ldi tmpreg,low(MINI_CIFRA_5)
-	st X+,tmpregh
-	st X+,tmpreg
-
-	ldi tmpregh,high(MINI_CIFRA_6)
-	ldi tmpreg,low(MINI_CIFRA_6)
-	st X+,tmpregh
-	st X+,tmpreg
-
-	ldi tmpregh,high(MINI_CIFRA_7)
-	ldi tmpreg,low(MINI_CIFRA_7)
-	st X+,tmpregh
-	st X+,tmpreg
-
-	ldi tmpregh,high(MINI_CIFRA_8)
-	ldi tmpreg,low(MINI_CIFRA_8)
-	st X+,tmpregh
-	st X+,tmpreg
-
-	ldi tmpregh,high(MINI_CIFRA_9)
-	ldi tmpreg,low(MINI_CIFRA_9)
-	st X+,tmpregh
-	st X+,tmpreg
-
+	ST_ptr CIFRA_0
+	ST_ptr CIFRA_1
+	ST_ptr CIFRA_2
+	ST_ptr CIFRA_3
+	ST_ptr CIFRA_4
+	ST_ptr CIFRA_5
+	ST_ptr CIFRA_6
+	ST_ptr CIFRA_7
+	ST_ptr CIFRA_8
+	ST_ptr CIFRA_9
 	 
+
+	set_ST_ptr rad_anim
+
+	ST_ptr RAD_0
+	ST_ptr RAD_1
+	ST_ptr RAD_2
+	ST_ptr RAD_3
+
+	;saving power, disabling unused periph
+	;ldi tmpreg,
+
+	;setup idle mode
+
+
 	;======= delays temporary disabled
 	.ifndef DBG
 	cbi		PORTD,DDD7			; к земле RES
@@ -292,13 +275,48 @@ reset:
 
 
 
+	clr tmpcount
+	
+	
+;	LCD_XY 0,1
+;	ld Zh
 
 
 	;===========================================
 
 	loop:
 	nop
+
+
+	sbrs controlreg, sec_tick
 	rjmp loop
+	;1 second flag is set
+	;reset flag
+	clt 
+	bld controlreg, sec_tick
+	LCD_XY 0,1
+	;LCD_dat RAD_1
+
+	set_ST_ptr rad_anim
+	;adiw XL,2
+	mov tmpreg, tmpcount
+	rol tmpreg
+	add XL,tmpreg
+	adc XH,zeroreg
+
+	sbi PORTB,P_MOSI
+	ld ZH, X+
+	ld ZL, X+
+	rcall SPI_start
+
+	inc tmpcount
+	cpi tmpcount, 4
+	brsh clr_tmpcount
+	rjmp loop
+	clr_tmpcount:
+	clr tmpcount
+	rjmp loop
+
 
 
 	; Pepare SPI data
@@ -483,53 +501,52 @@ LCD_init:
 .db 5,0, LC_nallon_dis,LC_pwron,LC_fillall_dis,LC_nor_dis, LC_nrev_dis, 0xFF;5
 
 LCD_sp:
-.db 1,0
-.db 0x00,1, 0xFF,0xFF; 96 ;96
+.db 1,0, \
+0x00,1, 0xFF,0xFF; 96 ;96
 
 LCD_clrline:
 .db 96,0, 0x00,192
 
 LCD_clr:
-.db 96,9
-.db 0x00, 192, 0x00, 192, 0x00, 192, 0x00, 192, 0x00, 192, 0x00,192; 96 ;96
-;------------- !!!!!!!!!!!!!!!!!!!       need to test with pattern below:
-.db 0x00, 255, 0x00, 255, 0x00, 255, 0x00, 255
-
+.db 96,9, \
+0x00, 192, 0x00, 192, 0x00, 192, 0x00, 192, 0x00, 192, 0x00,192, \
+0x00, 255, 0x00, 255, 0x00, 255, 0x00, 255
+/*
 Pattern:
-.db 4, 4
-.db 0x01,0x03,0x7,0x0F,0x1F,0x3F,0x7F,0xFF,0x03,0x0F,0x3F,0xFF,0x03,0x0F,0x3F,0xFF
-.db 0xFF,0xFF,0xFF,0xFF
+.db 4, 4, \
+0x01,0x03,0x7,0x0F,0x1F,0x3F,0x7F,0xFF,0x03,0x0F,0x3F,0xFF,0x03,0x0F,0x3F,0xFF, \
+0xFF,0xFF,0xFF,0xFF
 
 Pattern1:
-.db 5, 4
-.db 0x03,0x00,0x03,0xFF
-.db 0x03,0x00,0x03,0xFF
-.db 0x03,0x00,0x03,0xFF
-.db 0x03,0x00,0x03,0xFF
-.db 0xFF,0xFF,0xFF,0xFF
+.db 5, 4, \
+0x03,0x00,0x03,0xFF, \
+0x03,0x00,0x03,0xFF, \
+0x03,0x00,0x03,0xFF, \
+0x03,0x00,0x03,0xFF, \
+0xFF,0xFF,0xFF,0xFF
 
 Pattern2:
-.db 5, 4
-.db 0x00,0x03,0xFF,0x03
-.db 0x00,0x03,0xFF,0x03
-.db 0x00,0x03,0xFF,0x03
-.db 0x00,0x03,0xFF,0x03
-.db 0xFF,0xFF,0xFF,0x03
+.db 5, 4, \
+0x00,0x03,0xFF,0x03, \
+0x00,0x03,0xFF,0x03, \
+0x00,0x03,0xFF,0x03, \
+0x00,0x03,0xFF,0x03, \
+0xFF,0xFF,0xFF,0x03
 
 Pattern3:
-.db 5,3
-.db 0xFF,0xFF ,0x00, 11, 0xFF,0xFF 
+.db 5,3, \
+0xFF,0xFF ,0x00, 11, 0xFF,0xFF 
 
 Pattern4:
-.db 96,3
-.db 0x00, 93, 0xFF, 0x00, 96, 0xFF,0x00, 96, 0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+.db 96,3, \
+0x00, 93, 0xFF, 0x00, 96, 0xFF,0x00, 96, 0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
 
 Pattern5:
-.db 4,2
-.db 0xFF,0xFF,0x00,2
-.db 0xff,0xff,0xff,0xff
-.db 0xff,0xff,0x00,2
-
+.db 4,2, \
+0xFF,0xFF,0x00,2, \
+0xff,0xff,0xff,0xff, \
+0xff,0xff,0x00,2
+*/
 .include "data.inc"
 
 
@@ -541,6 +558,6 @@ TXRowCountMem: .byte 1
 qsecond: .byte 1 ; 1/4 second counter
 
 ;pointers
-sm_digits: .db 10
-digits: .db 10
-rad_anim: .db 3
+sm_digits: .byte 20
+digits: .byte 20
+rad_anim: .byte 6
