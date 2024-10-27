@@ -288,26 +288,26 @@ reset:
 	nop
 
 
-	sbrs controlreg, sec_tick
+	sbrs controlreg, qsec_tick
 	rjmp loop
 	;1 second flag is set
 	;reset flag
 	clt 
-	bld controlreg, sec_tick
+	bld controlreg, qsec_tick
 	LCD_XY 0,1
 	;LCD_dat RAD_1
 
-	set_ST_ptr rad_anim
-	;adiw XL,2
-	mov tmpreg, tmpcount
-	rol tmpreg
-	add XL,tmpreg
-	adc XH,zeroreg
+	LCD_datX rad_anim, tmpcount
+	;set_ST_ptr rad_anim
+	;mov tmpreg, tmpcount
+	;rol tmpreg
+	;add XL,tmpreg
+	;adc XH,zeroreg
 
-	sbi PORTB,P_MOSI
-	ld ZH, X+
-	ld ZL, X+
-	rcall SPI_start
+	;sbi PORTB,P_MOSI
+	;ld ZH, X+
+	;ld ZL, X+
+	;rcall SPI_start
 
 	inc tmpcount
 	cpi tmpcount, 4
@@ -555,7 +555,8 @@ Pattern5:
 TXCountMem: .byte 1 
 TXRowCountMem: .byte 1 
 
-qsecond: .byte 1 ; 1/4 second counter
+qsecond: .byte 1 ; 1/32 second counter
+qqsecond: .byte 1 ; 1/4 second counter
 
 ;pointers
 sm_digits: .byte 20

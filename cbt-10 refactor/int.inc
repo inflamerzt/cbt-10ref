@@ -103,6 +103,16 @@ push tmpreg
 
 lds tmpreg, qsecond
 inc tmpreg
+sbrs tmpreg, 3
+rjmp end_qsecond
+clr tmpreg
+set
+bld controlreg,qsec_tick
+end_qsecond:
+sts qsecond,tmpreg
+
+lds tmpreg, qqsecond
+inc tmpreg
 sbrs tmpreg, 5
 rjmp end_TIM2_COMPA
 ;every second tick
@@ -119,7 +129,7 @@ out PORTD, tmpreg
 pop tmpregh
 
 end_TIM2_COMPA:
-sts qsecond,tmpreg
+sts qqsecond,tmpreg
 
 pop tmpreg
 out SREG,tmpreg

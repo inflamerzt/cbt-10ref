@@ -48,6 +48,7 @@
 ; controlreg
 .equ inv_dis =0
 .equ sec_tick= 1
+.equ qsec_tick = 2
 ;============
 
 .def zeroreg = r2
@@ -86,6 +87,23 @@
 	sbi PORTB,P_MOSI
 	ldi Zl,low(@0*2)
 	ldi Zh,high(@0*2)
+	rcall SPI_start
+.endmacro
+
+
+.macro LCD_datX ;display data from pointer address @0 = array_pointer, @1 = shift(reg)
+	;set_ST_ptr rad_anim
+	ldi XH,high(@0)
+	ldi XL,low(@0)
+
+	mov tmpreg, @1
+	rol tmpreg
+	add XL,tmpreg
+	adc XH,zeroreg
+
+	sbi PORTB,P_MOSI
+	ld ZH, X+
+	ld ZL, X+
 	rcall SPI_start
 .endmacro
 
@@ -158,4 +176,5 @@ stxw:
 	st X+,tmpregh
 	st X+,tmpreg
 ret
+
 
