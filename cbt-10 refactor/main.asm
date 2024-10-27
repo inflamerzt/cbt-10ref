@@ -277,16 +277,161 @@ reset:
 
 	clr tmpcount
 	
-	
-;	LCD_XY 0,1
-;	ld Zh
+	/*
+	LCD_XY 30,0
+	ldi tmpreg,8
+	push tmpreg
+	LCD_datX digits, tmpreg
+	LCD_XY 38,0
+	pop tmpreg
+	inc tmpreg
+	push tmpreg
 
+	LCD_datX digits, tmpreg
+	pop tmpreg
+	inc tmpreg
+	push tmpreg
+	
+	LCD_datX sm_digits, tmpreg
+	pop tmpreg
+	inc tmpreg
+	push tmpreg
+	LCD_datX sm_digits, tmpreg
+	pop tmpreg
+	inc tmpreg
+	push tmpreg
+	LCD_datX sm_digits, tmpreg
+	pop tmpreg
+	inc tmpreg
+	push tmpreg
+	LCD_datX sm_digits, tmpreg
+	pop tmpreg
+	inc tmpreg
+	push tmpreg
+	LCD_datX sm_digits, tmpreg
+	pop tmpreg
+	inc tmpreg
+	push tmpreg
+	LCD_datX sm_digits, tmpreg
+	pop tmpreg
+	inc tmpreg
+	push tmpreg
+	LCD_datX sm_digits, tmpreg
+	pop tmpreg
+	inc tmpreg
+	push tmpreg
+	LCD_datX sm_digits, tmpreg
+	*/
 
 	;===========================================
+	;========= set zeroes at timer positions
 
+	LCD_XY 48,0
+	LCD_dat	CIFRA_0
+	LCD_XY 40,0
+	LCD_dat CIFRA_0
+	LCD_XY 56,0
+	LCD_dat DDot
+	LCD_XY 68,0
+	LCD_dat CIFRA_0
+	LCD_XY 60,0
+	LCD_dat CIFRA_0		
+	LCD_XY 76,0
+	LCD_dat DDot
+	LCD_XY 88,0
+	LCD_dat CIFRA_0
+	LCD_XY 80,0
+	LCD_dat CIFRA_0
+	
+	
+	;===========================================
 	loop:
 	nop
 
+	sbrs controlreg, sec_tick
+	rjmp no_sec
+	
+	clt 
+	bld controlreg, sec_tick
+	;increment seconds
+
+	lds argh, rtc_dsec	
+	lds arg, rtc_sec
+	push argh
+	rcall inc_less60
+	sts rtc_dsec, argh
+	sts rtc_sec, arg
+	pop tmpreg
+	
+	cp argh,tmpreg ; 0 5, 5 5, 5 4 
+	brlo sec_ovf
+	;increment minutes
+	rjmp no_secovf ;brsh cannot jump so far
+	sec_ovf:
+
+	lds argh, rtc_dmin	
+	lds arg, rtc_min
+	push argh
+	rcall inc_less60
+	sts rtc_dmin, argh
+	sts rtc_min, arg
+	pop tmpreg
+
+	cp argh,tmpreg 
+	brsh no_minovf
+	
+	;increment hours
+	lds tmpregh, rtc_dhour
+	lds tmpreg, rtc_hour
+
+	cpi tmpregh, 2
+	brlo h_less20
+	inc tmpreg
+	cpi tmpreg,4
+	brlo no_hovf
+	clr tmpreg
+	clr tmpregh
+	rjmp no_hovf
+
+	h_less20:
+	inc tmpreg
+	cpi tmpreg, 10
+	brlo no_hovf
+	clr tmpreg
+	inc tmpregh
+	no_hovf:
+	sts rtc_dhour,tmpregh
+	sts rtc_hour,tmpreg
+
+	LCD_XY 48,0
+	lds tmpreg, rtc_hour
+	LCD_datX digits, tmpreg
+	LCD_XY 40,0
+	lds tmpreg, rtc_dhour
+	LCD_datX digits, tmpreg
+	
+	no_minovf:
+
+	LCD_XY 68,0
+	lds tmpreg, rtc_min
+	LCD_datX digits, tmpreg
+	LCD_XY 60,0
+	lds tmpreg, rtc_dmin
+	LCD_datX digits, tmpreg
+
+
+	no_secovf:
+
+		
+	LCD_XY 88,0
+	lds tmpreg, rtc_sec
+	LCD_datX digits, tmpreg
+	LCD_XY 80,0
+	lds tmpreg, rtc_dsec
+	LCD_datX digits, tmpreg
+
+
+	no_sec:
 
 	sbrs controlreg, qsec_tick
 	rjmp loop
@@ -461,6 +606,21 @@ reset:
 	ret
 
 
+	;====================================
+	inc_less60:
+	clt
+	inc arg
+	cpi arg,10
+	brlo end_inc_less60
+	clr arg
+	inc argh
+	cpi argh, 6
+	brlo end_inc_less60
+	clr argh
+	set
+	end_inc_less60:
+	ret
+
 
 	;------------------задержка ~0,01 сек------------------
 
@@ -557,6 +717,14 @@ TXRowCountMem: .byte 1
 
 qsecond: .byte 1 ; 1/32 second counter
 qqsecond: .byte 1 ; 1/4 second counter
+
+;rtc vars
+rtc_sec: .byte 1
+rtc_dsec: .byte 1
+rtc_min: .byte 1
+rtc_dmin: .byte 1
+rtc_hour: .byte 1
+rtc_dhour: .byte 1
 
 ;pointers
 sm_digits: .byte 20
