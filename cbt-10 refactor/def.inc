@@ -17,6 +17,10 @@
 .equ DCboost_period = 0x50 ;small timing = fast boost  
 .equ DCboost_pulse = 8 ;512us - 22us (interrupt delay)
 
+;timer position
+.equ timer_posx = 40 ;40 - max
+.equ timer_posy = 6
+
 	;Установка линии начала сканирования 0 1 S5 S4 S3 S2 S1 S0 
 	;Установка линии начала сканирования S:0?Y?63
 

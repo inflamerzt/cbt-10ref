@@ -326,21 +326,21 @@ reset:
 	;===========================================
 	;========= set zeroes at timer positions
 
-	LCD_XY 48,0
+	LCD_XY timer_posx,timer_posy
+	LCD_dat CIFRA_0
+	LCD_XY timer_posx+8,timer_posy
 	LCD_dat	CIFRA_0
-	LCD_XY 40,0
-	LCD_dat CIFRA_0
-	LCD_XY 56,0
+	LCD_XY timer_posx+16,timer_posy
 	LCD_dat DDot
-	LCD_XY 68,0
+	LCD_XY timer_posx+20,timer_posy
 	LCD_dat CIFRA_0
-	LCD_XY 60,0
+	LCD_XY timer_posx+28,timer_posy
 	LCD_dat CIFRA_0		
-	LCD_XY 76,0
+	LCD_XY timer_posx+36,timer_posy
 	LCD_dat DDot
-	LCD_XY 88,0
+	LCD_XY timer_posx+40,timer_posy
 	LCD_dat CIFRA_0
-	LCD_XY 80,0
+	LCD_XY timer_posx+48,timer_posy
 	LCD_dat CIFRA_0
 	
 	
@@ -403,19 +403,19 @@ reset:
 	sts rtc_dhour,tmpregh
 	sts rtc_hour,tmpreg
 
-	LCD_XY 48,0
+	LCD_XY timer_posx+8,timer_posy
 	lds tmpreg, rtc_hour
 	LCD_datX digits, tmpreg
-	LCD_XY 40,0
+	LCD_XY timer_posx,timer_posy
 	lds tmpreg, rtc_dhour
 	LCD_datX digits, tmpreg
 	
 	no_minovf:
 
-	LCD_XY 68,0
+	LCD_XY timer_posx+28,timer_posy
 	lds tmpreg, rtc_min
 	LCD_datX digits, tmpreg
-	LCD_XY 60,0
+	LCD_XY timer_posx+20,timer_posy
 	lds tmpreg, rtc_dmin
 	LCD_datX digits, tmpreg
 
@@ -423,10 +423,10 @@ reset:
 	no_secovf:
 
 		
-	LCD_XY 88,0
+	LCD_XY timer_posx+48,timer_posy
 	lds tmpreg, rtc_sec
 	LCD_datX digits, tmpreg
-	LCD_XY 80,0
+	LCD_XY timer_posx+40,timer_posy
 	lds tmpreg, rtc_dsec
 	LCD_datX digits, tmpreg
 
