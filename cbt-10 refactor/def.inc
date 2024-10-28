@@ -18,8 +18,8 @@
 .equ DCboost_pulse = 8 ;512us - 22us (interrupt delay)
 
 ;timer position
-.equ timer_posx = 40 ;40 - max
-.equ timer_posy = 6
+.equ timer_posx = 27 ;40 - max
+.equ timer_posy = 0
 
 	;Установка линии начала сканирования 0 1 S5 S4 S3 S2 S1 S0 
 	;Установка линии начала сканирования S:0?Y?63
@@ -101,13 +101,7 @@
 	ldi XL,low(@0)
 
 	mov tmpreg, @1
-	rol tmpreg
-	add XL,tmpreg
-	adc XH,zeroreg
-
-	sbi PORTB,P_MOSI
-	ld ZH, X+
-	ld ZL, X+
+	rcall LCD_datX_func
 	rcall SPI_start
 .endmacro
 
@@ -179,6 +173,16 @@
 stxw: 
 	st X+,tmpregh
 	st X+,tmpreg
+ret
+
+LCD_datX_func:
+	rol tmpreg
+	add XL,tmpreg
+	adc XH,zeroreg
+
+	sbi PORTB,P_MOSI
+	ld ZH, X+
+	ld ZL, X+
 ret
 
 

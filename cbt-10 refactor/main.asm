@@ -131,7 +131,18 @@ reset:
 	 ldi tmpreg,(1<<OCIE2A)
 	 sts TIMSK2,tmpreg
 
-	 sei ;------------ temporary for test
+	 
+
+	;clear ram storage
+	ldi XH,high(TXCountMem)
+	ldi XL,low(TXCountMem)
+	ldi tmpreg,10
+	clr_mem:
+	st X+,zeroreg
+	dec tmpreg
+	brne clr_mem
+
+	sei ;------------ temporary for test
 
 	; fill pointers
 	
@@ -169,6 +180,8 @@ reset:
 	ST_ptr RAD_1
 	ST_ptr RAD_2
 	ST_ptr RAD_3
+
+
 
 	;saving power, disabling unused periph
 	;ldi tmpreg,
@@ -252,6 +265,8 @@ reset:
 	LCD_dat batter_fill
 	LCD_dat batter_nofill
 	LCD_dat batter_fill
+	LCD_dat batter_nofill
+	LCD_dat batter_fill
 	LCD_dat batter_bcap
 	;LCD_dat Timer
 	;LCD_dat Alfa  
@@ -271,6 +286,8 @@ reset:
 	;LCD_dat plus
 	;LCD_dat nastroiki_datchika ; needs to be reformated (pack data)
 	;LCD_dat strelka
+	LCD_XY 96-14,0
+	LCD_dat SUMMA
 
 
 
@@ -325,7 +342,7 @@ reset:
 
 	;===========================================
 	;========= set zeroes at timer positions
-
+	
 	LCD_XY timer_posx,timer_posy
 	LCD_dat CIFRA_0
 	LCD_XY timer_posx+8,timer_posy
