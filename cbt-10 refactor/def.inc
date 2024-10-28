@@ -17,13 +17,16 @@
 .equ DCboost_period = 0x50 ;small timing = fast boost  
 .equ DCboost_pulse = 8 ;512us - 22us (interrupt delay)
 
+;set quantity bytes to cleear on startup (.DSEG)
+.equ clrb_onreset = 11
+
 ;timer position
 .equ timer_posx = 27 ;40 - max
 .equ timer_posy = 0
 
 ;rad_anim_position
 .equ rad_an_posx = 0
-.equ rad_an_posy = 1
+.equ rad_an_posy = 2
 
 	;Установка линии начала сканирования 0 1 S5 S4 S3 S2 S1 S0 
 	;Установка линии начала сканирования S:0?Y?63
@@ -96,6 +99,15 @@
 	ldi Zl,low(@0*2)
 	ldi Zh,high(@0*2)
 	rcall SPI_start
+.endmacro
+
+.macro LCD_spX ;clears X pixels in rows (erase objects in string(s))
+	sbi PORTB,P_MOSI
+	ldi Zl,low(LCD_clr*2+2)
+	ldi Zh,high(LCD_clr*2+2)
+	ldi TXCount, @0
+	ldi TXRowCount, @1
+	rcall SPI_start_defined
 .endmacro
 
 

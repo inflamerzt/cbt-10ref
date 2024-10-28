@@ -44,7 +44,7 @@ reset:
 	sts PRR, tmpreg
 
 	;setup idle mode
-	ldi tmpreg, (1<<SE) ; idle sm=000
+	ldi tmpreg, (1<<SE);|(2<<SM0) ; idle sm=000
 	out SMCR, tmpreg
 
 
@@ -100,6 +100,7 @@ reset:
 	sbi DDRD, PD5 ; set compare output pin as out
 
 	ldi tmpreg,0xEF 
+	;ldi tmpreg, 0x00
 	out OCR0B,tmpreg
 
 	ldi tmpreg, (2<<COM0B0)|(3<<WGM00) ; (3<<COM0B0) if out must be inverted
@@ -111,22 +112,17 @@ reset:
 	ldi tmpreg, low(DCBoost_period)
 	sts OCR1AH, tmpregh
 	sts OCR1AL, tmpreg
-
-
+	
 	ldi tmpregh, high(DCBoost_period-DCBoost_pulse)
 	ldi tmpreg, low(DCBoost_period-DCBoost_pulse)
 	sts OCR1BH, tmpregh
 	sts OCR1BL, tmpreg
-
 
 	ldi tmpreg, (1<<OCIE1A) | (1<<OCIE1B)
 	sts TIMSK1, tmpreg
 
 	ldi tmpreg, (1<<WGM12)|(3<<CS10)
 	sts TCCR1B, tmpreg
-
-
-
 
 	;==================  enable timer2 /systick, realtime counter
 
@@ -141,12 +137,10 @@ reset:
 	 ldi tmpreg,(1<<OCIE2A)
 	 sts TIMSK2,tmpreg
 
-	 
-
-	;clear ram storage
+	;clear ram storage defined bytes in .DSEG
 	ldi XH,high(TXCountMem)
 	ldi XL,low(TXCountMem)
-	ldi tmpreg,10
+	ldi tmpreg, clrb_onreset
 	clr_mem:
 	st X+,zeroreg
 	dec tmpreg
@@ -154,8 +148,16 @@ reset:
 
 	sei ;------------ temporary for test
 
-	; fill pointers
+
+
+	;======= delays temporary disabled
+	.ifndef DBG
+	cbi		PORTD,DDD7			; к земле RES
 	
+	;======= here is time space to do something until display resets 10ms
+	;
+	;
+		; fill pointers
 	
 	set_ST_ptr sm_digits
 
@@ -182,8 +184,7 @@ reset:
 	ST_ptr CIFRA_7
 	ST_ptr CIFRA_8
 	ST_ptr CIFRA_9
-	 
-
+	
 	set_ST_ptr rad_anim
 
 	ST_ptr RAD_0
@@ -191,19 +192,13 @@ reset:
 	ST_ptr RAD_2
 	ST_ptr RAD_3
 
-
-
-	;======= delays temporary disabled
-	.ifndef DBG
-	cbi		PORTD,DDD7			; к земле RES
+	;320us
+	;here can be EEPROM check and read if need
 	
-	;======= here is time space to do something until display resets
-	;
-	;
 
-	
+	;-----------------------------------------------
 	rcall	pause_10ms ;100ms
-	rcall	pause_100ms ;uncomment if 10ms is unstable
+	;rcall	pause_100ms ;uncomment if 10ms is unstable
 	sbi		PORTD,DDD7			; подтяжка RES
 	rcall	pause_10ms	//delay 2500ns
 	
@@ -365,121 +360,54 @@ reset:
 	LCD_dat CIFRA_0
 
 	;LCD_XY_shift 0,4,20 ; uses tmpreg and 2 more instructions
-	LCD_XY 0,4
-	;LCD_inv
+	LCD_XY 20,3
+	
 	LCD_dat RODGER
+	
+	; half rodger
+	LCD_XY 30,3
+	;LCD_inv
+	LCD_spX 10,2
 	;LCD_norm
+
+
 	
 	
+	;===========================================
+	;	main loop idle and wait for interrupt
 	;===========================================
 	loop:
 	sleep
 
+	;check seconds flag
 	sbrs controlreg, sec_tick
-	rjmp no_sec
-	
+	rjmp no_sec ; not second
+	;every second
+	;1 second flag is set
 	clt 
-	bld controlreg, sec_tick
+	bld controlreg, sec_tick ;reset flag
 	
-	;increment seconds
-	lds argh, rtc_dsec	
-	lds arg, rtc_sec
-	push argh
-	rcall inc_less60
-	sts rtc_dsec, argh
-	sts rtc_sec, arg
-	pop tmpreg
-	
-	cp argh,tmpreg ; 0 5, 5 5, 5 4 
-	brlo sec_ovf
-	;increment minutes
-	rjmp no_secovf ;brsh cannot jump so far
-	sec_ovf:
-
-	lds argh, rtc_dmin	
-	lds arg, rtc_min
-	push argh
-	rcall inc_less60
-	sts rtc_dmin, argh
-	sts rtc_min, arg
-	pop tmpreg
-
-	cp argh,tmpreg 
-	brsh no_minovf
-	
-	;increment hours
-	lds tmpregh, rtc_dhour
-	lds tmpreg, rtc_hour
-
-	cpi tmpregh, 2
-	brlo h_less20
-	inc tmpreg
-	cpi tmpreg,4
-	brlo no_hovf
-	clr tmpreg
-	clr tmpregh
-	rjmp no_hovf
-
-	h_less20:
-	inc tmpreg
-	cpi tmpreg, 10
-	brlo no_hovf
-	clr tmpreg
-	inc tmpregh
-	no_hovf:
-	sts rtc_dhour,tmpregh
-	sts rtc_hour,tmpreg
-
-	LCD_XY timer_posx+8,timer_posy
-	lds tmpreg, rtc_hour
-	LCD_datX digits, tmpreg
-	LCD_XY timer_posx,timer_posy
-	lds tmpreg, rtc_dhour
-	LCD_datX digits, tmpreg
-	
-	no_minovf:
-
-	LCD_XY timer_posx+28,timer_posy
-	lds tmpreg, rtc_min
-	LCD_datX digits, tmpreg
-	LCD_XY timer_posx+20,timer_posy
-	lds tmpreg, rtc_dmin
-	LCD_datX digits, tmpreg
-
-
-	no_secovf:
-
-		
-	LCD_XY timer_posx+48,timer_posy
-	lds tmpreg, rtc_sec
-	LCD_datX digits, tmpreg
-	LCD_XY timer_posx+40,timer_posy
-	lds tmpreg, rtc_dsec
-	LCD_datX digits, tmpreg
-
-
+	rcall rtc
 	no_sec:
-
+	; check 1/4 second flag animation is here
 	sbrs controlreg, qsec_tick
-	rjmp loop
+	rjmp no_qsec
+	;every 1/4 second
 	;1/4 second flag is set
 	;reset flag
 	clt 
 	bld controlreg, qsec_tick
 	LCD_XY rad_an_posx,rad_an_posy
-	;LCD_dat RAD_1
-		;LCD_inv
-	LCD_datX rad_anim, tmpcount
-		;LCD_norm
 
-	inc tmpcount
-	cpi tmpcount, 4
-	brsh clr_tmpcount
-	rjmp loop
-	clr_tmpcount:
-	clr tmpcount
+	lds tmpreg, anim_count
+
+	LCD_datX rad_anim, tmpreg
+
+	rcall nxt_an_frame
+	no_qsec:
 	rjmp loop
 
+	;==========================================================================
 
 
 	; Pepare SPI data
@@ -622,9 +550,101 @@ reset:
 	pop TXRowCount
 	pop arg
 	ret
+	;====================================
+	
+	
+	;===== rtc increment and put on screen
+	rtc:
+	;increment seconds
+	lds argh, rtc_dsec	
+	lds arg, rtc_sec
+	push argh
+	rcall inc_less60
+	sts rtc_dsec, argh
+	sts rtc_sec, arg
+	pop tmpreg
+	
+	cp argh,tmpreg ; 0 5, 5 5, 5 4 
+	brlo sec_ovf
+	;increment minutes
+	rjmp no_secovf ;brsh cannot jump so far
+	sec_ovf:
 
+	lds argh, rtc_dmin	
+	lds arg, rtc_min
+	push argh
+	rcall inc_less60
+	sts rtc_dmin, argh
+	sts rtc_min, arg
+	pop tmpreg
+
+	cp argh,tmpreg 
+	brsh no_minovf
+	
+	;increment hours
+	lds tmpregh, rtc_dhour
+	lds tmpreg, rtc_hour
+
+	cpi tmpregh, 2
+	brlo h_less20
+	inc tmpreg
+	cpi tmpreg,4
+	brlo no_hovf
+	clr tmpreg
+	clr tmpregh
+	rjmp no_hovf
+
+	h_less20:
+	inc tmpreg
+	cpi tmpreg, 10
+	brlo no_hovf
+	clr tmpreg
+	inc tmpregh
+	no_hovf:
+	sts rtc_dhour,tmpregh
+	sts rtc_hour,tmpreg
+
+	LCD_XY timer_posx+8,timer_posy
+	lds tmpreg, rtc_hour
+	LCD_datX digits, tmpreg
+	LCD_XY timer_posx,timer_posy
+	lds tmpreg, rtc_dhour
+	LCD_datX digits, tmpreg
+	
+	no_minovf:
+
+	LCD_XY timer_posx+28,timer_posy
+	lds tmpreg, rtc_min
+	LCD_datX digits, tmpreg
+	LCD_XY timer_posx+20,timer_posy
+	lds tmpreg, rtc_dmin
+	LCD_datX digits, tmpreg
+	
+	no_secovf:
+	
+	LCD_XY timer_posx+48,timer_posy
+	lds tmpreg, rtc_sec
+	LCD_datX digits, tmpreg
+	LCD_XY timer_posx+40,timer_posy
+	lds tmpreg, rtc_dsec
+	LCD_datX digits, tmpreg
+
+	ret
 
 	;====================================
+	;=== calculate next frame position
+	nxt_an_frame:
+	lds tmpreg, anim_count
+	inc tmpreg
+	cpi tmpreg, 4
+	brlo st_an_cnt
+	clr tmpreg
+	st_an_cnt:
+	sts anim_count, tmpreg
+	ret
+
+	;====================================
+	;=== increment seconds or minutes
 	inc_less60:
 	clt
 	inc arg
@@ -638,6 +658,7 @@ reset:
 	set
 	end_inc_less60:
 	ret
+	;====================================
 
 
 	;------------------задержка ~0,01 сек------------------
@@ -678,12 +699,12 @@ cikl_pause_t:
 LCD_init:
 .db 5,0, LC_nallon_dis,LC_pwron,LC_fillall_dis,LC_nor_dis, LC_nrev_dis, 0xFF;5
 
-LCD_sp:
-.db 1,0, \
-0x00,1, 0xFF,0xFF; 96 ;96
+;LCD_sp:
+;.db 1,0, \
+;0x00,1, 0xFF,0xFF; 96 ;96
 
-LCD_clrline:
-.db 96,0, 0x00,192
+;LCD_clrline:
+;.db 96,0, 0x00,192
 
 LCD_clr:
 .db 96,9, \
@@ -735,6 +756,8 @@ TXRowCountMem: .byte 1
 
 qsecond: .byte 1 ; 1/32 second counter
 qqsecond: .byte 1 ; 1/4 second counter
+
+anim_count: .byte 1
 
 ;rtc vars
 rtc_sec: .byte 1
