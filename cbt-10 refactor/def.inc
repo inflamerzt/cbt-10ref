@@ -22,7 +22,7 @@
 .equ timer_posy = 0
 
 ;rad_anim_position
-.equ rad_an_posx = 20
+.equ rad_an_posx = 0
 .equ rad_an_posy = 1
 
 	;Установка линии начала сканирования 0 1 S5 S4 S3 S2 S1 S0 
@@ -120,6 +120,15 @@
 	ldi TXYpos, @1
 	rcall LCD_goto_XY
 .endmacro
+
+.macro LCD_XY_shift ;x = 0..95  y = 0..7
+	ldi TXXpos, @0
+	ldi tmpreg, @2
+	add TXXpos,tmpreg
+	ldi TXYpos, @1
+	rcall LCD_goto_XY
+.endmacro
+
 
 .macro LCD_norm ; put symbols on LCD normal
 	clt ;- normal display

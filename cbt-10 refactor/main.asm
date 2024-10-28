@@ -38,6 +38,16 @@ reset:
 	;sts		CLKPR, r25
 	;sei
 	
+
+	;saving power, disabling unused periph
+	ldi tmpreg,(1<<PRTWI)|(1<<PRUSART0)
+	sts PRR, tmpreg
+
+	;setup idle mode
+	ldi tmpreg, (1<<SE) ; idle sm=000
+	out SMCR, tmpreg
+
+
 	;=init predefined registers
 	clr zeroreg
 	ldi r16,(1<<MSTR)|(1<<SPE)
@@ -181,12 +191,6 @@ reset:
 	ST_ptr RAD_2
 	ST_ptr RAD_3
 
-
-
-	;saving power, disabling unused periph
-	;ldi tmpreg,
-
-	;setup idle mode
 
 
 	;======= delays temporary disabled
@@ -359,19 +363,25 @@ reset:
 	LCD_dat CIFRA_0
 	LCD_XY timer_posx+48,timer_posy
 	LCD_dat CIFRA_0
+
+	;LCD_XY_shift 0,4,20 ; uses tmpreg and 2 more instructions
+	LCD_XY 0,4
+	;LCD_inv
+	LCD_dat RODGER
+	;LCD_norm
 	
 	
 	;===========================================
 	loop:
-	nop
+	sleep
 
 	sbrs controlreg, sec_tick
 	rjmp no_sec
 	
 	clt 
 	bld controlreg, sec_tick
+	
 	;increment seconds
-
 	lds argh, rtc_dsec	
 	lds arg, rtc_sec
 	push argh
@@ -458,8 +468,9 @@ reset:
 	bld controlreg, qsec_tick
 	LCD_XY rad_an_posx,rad_an_posy
 	;LCD_dat RAD_1
-
+		;LCD_inv
 	LCD_datX rad_anim, tmpcount
+		;LCD_norm
 
 	inc tmpcount
 	cpi tmpcount, 4
