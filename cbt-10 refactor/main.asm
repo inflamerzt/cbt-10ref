@@ -452,24 +452,14 @@ reset:
 
 	sbrs controlreg, qsec_tick
 	rjmp loop
-	;1 second flag is set
+	;1/4 second flag is set
 	;reset flag
 	clt 
 	bld controlreg, qsec_tick
-	LCD_XY 0,1
+	LCD_XY rad_an_posx,rad_an_posy
 	;LCD_dat RAD_1
 
 	LCD_datX rad_anim, tmpcount
-	;set_ST_ptr rad_anim
-	;mov tmpreg, tmpcount
-	;rol tmpreg
-	;add XL,tmpreg
-	;adc XH,zeroreg
-
-	;sbi PORTB,P_MOSI
-	;ld ZH, X+
-	;ld ZL, X+
-	;rcall SPI_start
 
 	inc tmpcount
 	cpi tmpcount, 4

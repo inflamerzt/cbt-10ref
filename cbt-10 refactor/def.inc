@@ -21,6 +21,10 @@
 .equ timer_posx = 27 ;40 - max
 .equ timer_posy = 0
 
+;rad_anim_position
+.equ rad_an_posx = 20
+.equ rad_an_posy = 1
+
 	;Установка линии начала сканирования 0 1 S5 S4 S3 S2 S1 S0 
 	;Установка линии начала сканирования S:0?Y?63
 
