@@ -139,6 +139,17 @@ reset:
 	ST_ptr RAD_2
 	ST_ptr RAD_3
 
+	set_ST_ptr icons
+
+	ST_ptr count_pic
+	ST_ptr alarm_pic
+	ST_ptr threshold_pic
+	ST_ptr clk_vol_pic
+	ST_ptr bright_pic
+	ST_ptr sen_set_pic
+	ST_ptr bat_cal_pic
+	ST_ptr contr_pic
+
 
 	;==============================================
 	;==============================================
@@ -166,45 +177,9 @@ reset:
 	
 	rcall backlight_on
 
-	;===== enable timer1 and configure interrupts  = enable 400V booster
-	
-	ldi tmpregh, high(DCBoost_period)
-	ldi tmpreg, low(DCBoost_period)
-	sts OCR1AH, tmpregh
-	sts OCR1AL, tmpreg
-	
-	ldi tmpregh, high(DCBoost_period-DCBoost_pulse)
-	ldi tmpreg, low(DCBoost_period-DCBoost_pulse)
-	sts OCR1BH, tmpregh
-	sts OCR1BL, tmpreg
+	rcall enable_booster
 
-	ldi tmpreg, (1<<OCIE1A) | (1<<OCIE1B)
-	sts TIMSK1, tmpreg
-
-	ldi tmpreg, (1<<WGM12)|(3<<CS10)
-	sts TCCR1B, tmpreg
-
-	;==================  enable timer2 /systick, realtime counter
-
-	;timer configuration counter = 125 (124), prescaller 64 - period = 1/8 seconds
-	;need to compensate -73us per second /121
-	 ldi tmpreg, 121 ;126=15.34;125=15.46 different in real system, need to check on hardware
-	 sts OCR2A,tmpreg
-	 ldi tmpreg, (1<<WGM21)
-	 sts TCCR2A,tmpreg 
-	 ldi tmpreg, (6<<CS20) ;1/32 sec
-	 sts TCCR2B,tmpreg 
-	 ldi tmpreg,(1<<OCIE2A)
-	 sts TIMSK2,tmpreg
-
-	;clear ram storage defined bytes in .DSEG
-	ldi XH,high(TXCountMem)
-	ldi XL,low(TXCountMem)
-	ldi tmpreg, clrb_onreset
-	clr_mem:
-	st X+,zeroreg
-	dec tmpreg
-	brne clr_mem
+	rcall enable_systick
 
 	sei ;------------ temporary for test
 
@@ -235,13 +210,8 @@ reset:
 
 	LCD_cmd LCD_init
 	
-	/*
-	;set ;- inverse display
-	clt ;- normal display
-	bld controlreg, inv_dis
-	*/
-
 	LCD_norm
+	;LCD_inv
 
 	LCD_XY 0,0
 	LCD_dat LCD_clr
@@ -253,76 +223,19 @@ reset:
 	;test here
 	;===========================================
 	
-	/*
-	;set ;- inverse display
-	clt ;- normal display
-	bld controlreg, inv_dis
-	*/
 	LCD_norm
 	;LCD_inv
 	
 	
-	LCD_XY 0,0
+	rcall test_primitive
+	rcall test_screen
 
-	;LCD_dat RAD_BIG
-
-	;LCD_XY 0,4
-	;LCD_dat pausa
-	;LCD_dat plav
-	;LCD_dat summa
-	;LCD_dat cps
-	;LCD_dat mkrh
-	/*
-	;------------LCD_dat batter
-	LCD_dat batter_cap
-	LCD_dat batter_nofill
-	LCD_dat batter_fill
-	LCD_dat batter_nofill
-	LCD_dat batter_fill
-	LCD_dat batter_nofill
-	LCD_dat batter_fill
-	LCD_dat batter_nofill
-	LCD_dat batter_fill
-	LCD_dat batter_nofill
-	LCD_dat batter_fill
-	LCD_dat batter_bcap
-	*/
-	;LCD_dat Alfa  
-	;LCD_dat  beta
-	;LCD_dat gamma
-	;LCD_dat summa_ravno
-	;LCD_dat result
-	;LCD_dat rc
-	;LCD_dat grom_shek
-	;LCD_dat zvuk_opov ; not displays correctly
-	;LCD_dat fon_porog
-	;LCD_dat podsvetka ; not displays correctly
-	;LCD_dat vkl
-	;LCD_dat vblkl
-	;LCD_dat mkr
-	;LCD_dat minus
-	;LCD_dat plus
-	;LCD_dat nastroiki_datchika ; needs to be reformated (pack data)
-	;LCD_dat strelka
-	/*
 
 	
 	;===========================================
 
-	;LCD_XY_shift 0,4,20 ; uses tmpreg and 2 more instructions
-	LCD_XY 20,3
-	
-	LCD_dat RODGER
-	
-	; half rodger
-	LCD_XY 30,3
-	;LCD_inv
-	LCD_spX 10,2
-	;LCD_norm
 
-	*/
 
-	rcall test_screen
 	
 	
 	;===========================================
@@ -331,7 +244,7 @@ reset:
 	loop:
 		sleep
 
-	rjmp loop ; for temporary disable main loop
+	;rjmp loop ; for temporary disable main loop
 
 		;check seconds flag
 		sbrs controlreg, sec_tick
@@ -356,7 +269,6 @@ reset:
 		LCD_XY rad_an_posx,rad_an_posy
 
 		lds tmpreg, anim_count
-
 		LCD_datX rad_anim, tmpreg
 
 		rcall nxt_an_frame
@@ -432,7 +344,8 @@ rtc_dhour: .byte 1
 ;pointers
 sm_digits: .byte 20
 digits: .byte 20
-rad_anim: .byte 6
+rad_anim: .byte 8
+icons: .byte 16
 
 ;==== EEPROM MEMORY DATA SEGMENT ======================================================================
 .ESEG

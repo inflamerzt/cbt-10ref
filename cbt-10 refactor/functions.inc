@@ -264,3 +264,49 @@
 	
 		ret
 
+
+;===== enable timer1 and configure interrupts  = enable 400V booster
+	
+enable_booster:
+	ldi tmpregh, high(DCBoost_period)
+	ldi tmpreg, low(DCBoost_period)
+	sts OCR1AH, tmpregh
+	sts OCR1AL, tmpreg
+	
+	ldi tmpregh, high(DCBoost_period-DCBoost_pulse)
+	ldi tmpreg, low(DCBoost_period-DCBoost_pulse)
+	sts OCR1BH, tmpregh
+	sts OCR1BL, tmpreg
+
+	ldi tmpreg, (1<<OCIE1A) | (1<<OCIE1B)
+	sts TIMSK1, tmpreg
+
+	ldi tmpreg, (1<<WGM12)|(3<<CS10)
+	sts TCCR1B, tmpreg
+ret
+
+;========================================================================
+
+	;==================  enable timer2 /systick, realtime counter
+
+	;timer configuration counter = 125 (124), prescaller 64 - period = 1/8 seconds
+	;need to compensate -73us per second /121
+enable_systick:
+	 ldi tmpreg, 121 ;126=15.34;125=15.46 different in real system, need to check on hardware
+	 sts OCR2A,tmpreg
+	 ldi tmpreg, (1<<WGM21)
+	 sts TCCR2A,tmpreg 
+	 ldi tmpreg, (6<<CS20) ;1/32 sec
+	 sts TCCR2B,tmpreg 
+	 ldi tmpreg,(1<<OCIE2A)
+	 sts TIMSK2,tmpreg
+
+	;clear ram storage defined bytes in .DSEG
+	ldi XH,high(TXCountMem)
+	ldi XL,low(TXCountMem)
+	ldi tmpreg, clrb_onreset
+	clr_mem:
+	st X+,zeroreg
+	dec tmpreg
+	brne clr_mem
+	ret
