@@ -124,11 +124,11 @@ LCD_dat MINI_CIFRA_0
 ;LCD_dat Plus
 ;LCD_dat Strelka
 ;--------------------
-;LCD_dat soundOFF
 LCD_XY 21,0
+;LCD_dat soundOFF
 LCD_dat soundON
-;LCD_dat alarmOFF
 LCD_XY 21,1
+;LCD_dat alarmOFF
 LCD_dat alarmON
 LCD_XY 16,1
 LCD_dat volt
