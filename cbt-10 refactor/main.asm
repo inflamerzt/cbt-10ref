@@ -230,7 +230,11 @@ reset:
 	rcall test_primitive
 	rcall test_screen
 
+	clr tmpcount
 
+	;LCD_XY 40,3
+	;ldi tmpreg, 2
+	;LCD_datX icons, tmpreg
 	
 	;===========================================
 
@@ -256,6 +260,19 @@ reset:
 		bld controlreg, sec_tick ;reset flag
 	
 		rcall rtc
+
+		LCD_XY 40,3
+		LCD_spX 31,4
+		LCD_XY 40,3
+		;ldi tmpreg, 0
+		LCD_datX icons, tmpcount
+		inc tmpcount
+		cpi tmpcount,8
+		brlo no_clr
+		clr tmpcount
+		no_clr:
+
+
 	no_sec:
 		; check 1/4 second flag animation is here
 		sbrs controlreg, qsec_tick
