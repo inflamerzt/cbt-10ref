@@ -1,3 +1,8 @@
+; cps 00.000
+; uR/h 00.00
+
+
+
 .equ LC_pwroff = 0x20
 .equ LC_pwron = 0x2F
 .equ LC_nallon_dis = 0xA4 ;normal display
@@ -52,14 +57,18 @@
 .equ P_bCap = PD1
 .equ P_bTrans = PD2
 
-.equ P_boostFB = PC5
-
+.equ DDR_LCD_RST = DDRD
 .equ P_LCD_RES = PD7
 
-; controlreg
+.equ P_boostFB = PC5
+
+
+
+; controlreg (r4) flags
 .equ inv_dis =0
 .equ sec_tick= 1
 .equ qsec_tick = 2
+.equ alarm = 3
 ;============
 
 .def zeroreg = r2
@@ -170,7 +179,7 @@
 ;.ORG $0000
 	rjmp	reset				;rjmp RESET ; Reset Handler
 		reti ;rjmp EXT_INT0 ; IRQ0 Handler
-		reti ;rjmp	INT_Shelchok		;rjmp EXT_INT1 ; IRQ1 Handler
+		rjmp EXT_INT1 ; IRQ1 Handler
 		reti ;rjmp PCINT0 ; PCINT0 Handler
 		reti ;rjmp PCINT1 ; PCINT1 Handler
 		reti ;rjmp PCINT2 ; PCINT2 Handler

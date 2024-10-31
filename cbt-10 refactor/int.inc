@@ -1,3 +1,17 @@
+EXT_INT1:
+;sensor pulse
+push tmpreg
+in tmpreg, SREG
+push tmpreg
+
+
+
+pop tmpreg
+out SREG,tmpreg
+pop tmpreg
+reti
+
+
 TIM1_COMPA: ; Timer1 Compare A Handler
 ;nop
 ;discharge cap
