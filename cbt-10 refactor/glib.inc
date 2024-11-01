@@ -17,7 +17,7 @@ test_primitive:
 	;LCD_dat summa
 	;LCD_dat cps
 	;LCD_dat mkrh
-	/*
+	;/*
 	;------------LCD_dat batter
 	LCD_dat batter_cap
 	LCD_dat batter_nofill
@@ -31,7 +31,7 @@ test_primitive:
 	LCD_dat batter_nofill
 	LCD_dat batter_fill
 	LCD_dat batter_bcap
-	*/
+	;*/
 	;LCD_dat Alfa  
 	;LCD_dat  beta
 	;LCD_dat gamma
@@ -72,7 +72,7 @@ LCD_XY 0,1
 LCD_dat MINI_CIFRA_0
 LCD_dat MINI_dot
 LCD_dat MINI_CIFRA_0
-LCD_dat MINI_CIFRA_0
+
 ;LCD_dat MINI_CIFRA_1
 ;LCD_dat MINI_CIFRA_2
 ;LCD_dat MINI_CIFRA_3
@@ -124,13 +124,13 @@ LCD_dat MINI_CIFRA_0
 ;LCD_dat Plus
 ;LCD_dat Strelka
 ;--------------------
-LCD_XY 21,0
+LCD_XY 16,0
 ;LCD_dat soundOFF
 LCD_dat soundON
-LCD_XY 21,1
+LCD_XY 17,1
 ;LCD_dat alarmOFF
 LCD_dat alarmON
-LCD_XY 16,1
+LCD_XY 11,1
 LCD_dat volt
 ;LCD_dat count_menu
 ;LCD_dat alarm_menu
