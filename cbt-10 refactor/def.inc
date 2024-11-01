@@ -33,6 +33,17 @@
 .equ rad_an_posx = 0
 .equ rad_an_posy = 2
 
+
+;icons shift values
+.equ scount_pic = 2
+.equ salarm_pic = 0
+.equ sthreshold_pic = 2
+.equ sclk_vol_pic = 2
+.equ sbright_pic = 0
+.equ ssen_set_pic = 0
+.equ sbat_cal_pic = 6
+.equ scontr_pic = 0
+
 	;Установка линии начала сканирования 0 1 S5 S4 S3 S2 S1 S0 
 	;Установка линии начала сканирования S:0?Y?63
 
@@ -150,6 +161,12 @@
 	rcall LCD_goto_XY
 .endmacro
 
+.macro LCD_XY_shifttr ;x = 0..95  y = 0..7
+	ldi TXXpos, @0
+	add TXXpos,tmpreg
+	ldi TXYpos, @1
+	rcall LCD_goto_XY
+.endmacro
 
 .macro LCD_norm ; put symbols on LCD normal
 	clt ;- normal display

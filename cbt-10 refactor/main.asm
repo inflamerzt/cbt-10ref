@@ -150,7 +150,26 @@ reset:
 	ST_ptr bat_cal_pic
 	ST_ptr contr_pic
 
+	ldi XH,high(icons_shifts)
+	ldi XL,low(icons_shifts) 
 
+	ldi tmpreg, scount_pic
+	st X+, tmpreg
+	ldi tmpreg, salarm_pic
+	st X+, tmpreg
+	ldi tmpreg, sthreshold_pic
+	st X+, tmpreg
+	ldi tmpreg, sclk_vol_pic
+	st X+, tmpreg
+	ldi tmpreg, sbright_pic
+	st X+, tmpreg
+	ldi tmpreg, ssen_set_pic
+	st X+, tmpreg
+	ldi tmpreg, sbat_cal_pic
+	st X+, tmpreg
+	ldi tmpreg, scontr_pic
+	st X+, tmpreg
+	
 	;==============================================
 	;==============================================
 	; sleep
@@ -262,8 +281,15 @@ reset:
 		rcall rtc
 
 		LCD_XY 40,3
-		LCD_spX 31,4
-		LCD_XY 40,3
+		LCD_spX 32,4	
+		
+		ldi XH,high(icons_shifts)
+		ldi XL,low(icons_shifts)
+		add XL,tmpcount
+		adc XH,zeroreg
+		ld tmpreg,X
+		LCD_XY_shifttr 40,3,tmpreg
+		;LCD_XY 40,3
 		;ldi tmpreg, 0
 		LCD_datX icons, tmpcount
 		inc tmpcount
@@ -363,6 +389,7 @@ sm_digits: .byte 20
 digits: .byte 20
 rad_anim: .byte 8
 icons: .byte 16
+icons_shifts: .byte 8
 
 ;==== EEPROM MEMORY DATA SEGMENT ======================================================================
 .ESEG
