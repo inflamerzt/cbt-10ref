@@ -60,7 +60,11 @@ reset:
 	out DDR_SPI,tmpreg
 	cbi DDR_SPI,P_MISO
 
-	out DDRC, zeroreg
+	ldi tmpreg, (1<<PC0)
+
+	out DDRC, tmpreg
+
+	sbi PORTC, PC0
 
 	sei
 
