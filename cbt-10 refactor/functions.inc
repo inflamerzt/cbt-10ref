@@ -265,6 +265,25 @@
 		ret
 
 
+;==================================================
+
+	backlight_off:
+		;===== enable timer0 and configure pwm LED_backlight
+		ldi tmpreg, (1<<CS00)
+		out TCCR0B,tmpreg
+	
+		sbi DDRD, PD5 ; set compare output pin as out
+
+		;ldi tmpreg,0xEF 
+		ldi tmpreg, 0x00
+		out OCR0B,tmpreg
+
+		ldi tmpreg, (2<<COM0B0)|(3<<WGM00) ; (3<<COM0B0) if out must be inverted
+		out TCCR0A, tmpreg
+	
+		ret
+
+
 ;===== enable timer1 and configure interrupts  = enable 400V booster
 	
 enable_booster:

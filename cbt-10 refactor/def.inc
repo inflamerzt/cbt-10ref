@@ -44,6 +44,21 @@
 .equ sbat_cal_pic = 6
 .equ scontr_pic = 0
 
+;voltage measure pin
+.equ Vmeas_DDR = DDRC
+.equ Vmeas_port = PORTC
+.equ P_Vmeas = PC0
+
+
+;buttons
+.equ button1 = PC1
+.equ button2 = PC2
+.equ button3 = PC3
+
+
+
+
+
 	;Установка линии начала сканирования 0 1 S5 S4 S3 S2 S1 S0 
 	;Установка линии начала сканирования S:0?Y?63
 
@@ -198,7 +213,7 @@
 		reti ;rjmp EXT_INT0 ; IRQ0 Handler
 		rjmp EXT_INT1 ; IRQ1 Handler
 		reti ;rjmp PCINT0 ; PCINT0 Handler
-		reti ;rjmp PCINT1 ; PCINT1 Handler
+		rjmp PCINT1_int ; PCINT1 Handler
 		reti ;rjmp PCINT2 ; PCINT2 Handler
 		reti ;rjmp WDT ; Watchdog Timer Handler
 		rjmp TIM2_COMPA ; Timer2 Compare A Handler

@@ -60,11 +60,11 @@ reset:
 	out DDR_SPI,tmpreg
 	cbi DDR_SPI,P_MISO
 
-	ldi tmpreg, (1<<PC0)
+	ldi tmpreg, (1<<P_Vmeas)
 
-	out DDRC, tmpreg
+	out Vmeas_DDR, tmpreg
 
-	sbi PORTC, PC0
+	sbi Vmeas_port, P_Vmeas
 
 	sei
 
@@ -211,6 +211,8 @@ reset:
 	/*
 	EICRA (1<<ISC11)|(1<<ISC10) rising edge need to check maybe other variant
 	EIMSK (1<<INT1) enable interrupt 1 to get data from sensor
+	
+
 
 	PCICR look at Pins and enable only what need 3 buttons
 	PCIE2 ;---------PCINT[23:16] PCMSK2
@@ -218,16 +220,24 @@ reset:
 	PCIE0 ;---------PCINT[7:0] PCMSK0
 	*/
 
+
+	;pciint 9,10,11 - buttons
+	ldi tmpreg, (1<<PCIE1)
+	sts PCICR, tmpreg
+	ldi tmpreg, (1<<PCINT9)|(1<<PCINT10)|(1<<PCINT11)
+	sts PCMSK1, tmpreg
+
+
 	;====== enable ADC
 	; DIDR0  ADC5D ADC4D ADC3D ADC2D ADC1D ADC0D - disable digital inputs on used adc channels
 	; ADC6 - noise
 	; ADC7 - vcc
 
 
-	;ldi		r24, 0b11000111		; ADC7 1.1V ADLAR = 0
-	;sts		ADMUX, r24
-	;ldi		r24, 0b11000100		; 62,5 kHz	однократное преобразование
-	;sts		ADCSRA, r24
+	ldi		r24, 0b11000111		; ADC7 1.1V ADLAR = 0
+	sts		ADMUX, r24
+	ldi		r24, 0b11000100		; 62,5 kHz	однократное преобразование
+	sts		ADCSRA, r24
 
 
 
@@ -329,7 +339,17 @@ reset:
 	;function prototypes for testing purposes
 	; move to functions inc after complete and test
 	;=====================================================
+	bcd_adc_convert:
+	;0x01 = 4,297 * 10E-3 (8bit)
+	;0x01 = 1.074 * 10E-3 (12bit)
+	;high
+	; > 1V = > 46
 
+
+	;low
+
+
+	ret
 
 	;====================================
 

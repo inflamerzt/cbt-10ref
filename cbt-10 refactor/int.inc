@@ -6,6 +6,26 @@ push tmpreg
 
 
 
+
+pop tmpreg
+out SREG,tmpreg
+pop tmpreg
+reti
+
+PCINT1_int:
+;buttons pressed/released 
+push tmpreg
+in tmpreg, SREG
+push tmpreg
+
+
+sbis PINC, PC2
+rcall backlight_off
+
+sbis PINC, PC3
+rcall backlight_on
+
+
 pop tmpreg
 out SREG,tmpreg
 pop tmpreg
