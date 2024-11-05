@@ -230,7 +230,7 @@
 		reti ;rjmp USART_RXC ; USART, RX Complete Handler
 		reti ;rjmp USART_UDRE ; USART, UDR Empty Handler
 		reti ;rjmp USART_TXC ; USART, TX Complete Handler
-		reti ;rjmp ADC ; ADC Conversion Complete Handler
+		rjmp ADC_compl ; ADC Conversion Complete Handler
 		reti ;rjmp EE_RDY ; EEPROM Ready Handler
 		reti ;rjmp ANA_COMP ; Analog Comparator Handler
 		reti ;rjmp TWI ; 2-wire Serial Interface Handler

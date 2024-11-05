@@ -32,6 +32,46 @@ pop tmpreg
 reti
 
 
+ADC_compl:
+	push tmpreg
+	in tmpreg, SREG
+	push tmpreg
+	push tmpregh
+	push r1
+	push r0
+
+	cbi Vmeas_port, P_Vmeas
+
+	lds tmpreg, ADCH
+	lsr tmpreg
+	lsr tmpreg
+	dec tmpreg ; 0.1 volt correction
+	mov tmpregh, tmpreg
+	push tmpregh
+	ldi tmpregh, 0xCD
+	mul tmpregh,tmpreg
+	mov tmpreg, r1
+	lsr tmpreg
+	lsr tmpreg
+	lsr tmpreg
+	ldi tmpregh,10
+	mul tmpregh,tmpreg
+	pop tmpregh
+	sub tmpregh, r0
+
+	sts bat_volt, tmpreg
+	sts bat_tenthvolt, tmpregh
+
+	sts ADCSRA, zeroreg
+	
+	pop r0
+	pop r1
+	pop tmpregh
+	pop tmpreg
+	out SREG,tmpreg
+	pop tmpreg
+reti
+
 TIM1_COMPA: ; Timer1 Compare A Handler
 ;nop
 ;discharge cap

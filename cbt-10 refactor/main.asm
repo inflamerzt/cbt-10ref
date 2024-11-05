@@ -38,7 +38,15 @@ reset:
 	;sts		CLKPR, r24
 	;sts		CLKPR, r25
 	;sei
+	;=================================================
+	;testing
 	
+
+
+
+
+
+	;=================================================
 
 	;saving power, disabling unused periph
 	ldi tmpreg,(1<<PRTWI)|(1<<PRUSART0)
@@ -234,11 +242,17 @@ reset:
 	; ADC7 - vcc
 
 
-	ldi		r24, 0b11000111		; ADC7 1.1V ADLAR = 0
-	sts		ADMUX, r24
-	ldi		r24, 0b11000100		; 62,5 kHz	однократное преобразование
-	sts		ADCSRA, r24
+	;ldi		r24, 0b11000111		; ADC7 1.1V ADLAR = 0
+	;sts		ADMUX, r24
+	;ldi		r24, 0b11000100		; 62,5 kHz	однократное преобразование
+	;sts		ADCSRA, r24
 
+	sbi Vmeas_port, P_Vmeas
+
+	ldi tmpreg, (1<<REFS1)|(1<<REFS0)|(1<<ADLAR)|(7<<MUX0)
+	sts	ADMUX, tmpreg
+	ldi tmpreg, (1<<ADEN)|(1<<ADSC)|(1<<ADIE)|(2<<ADPS0)
+	sts ADCSRA, tmpreg
 
 
 	LCD_cmd LCD_init
@@ -313,6 +327,9 @@ reset:
 		no_clr:
 
 
+
+
+
 	no_sec:
 		; check 1/4 second flag animation is here
 		sbrs controlreg, qsec_tick
@@ -329,6 +346,26 @@ reset:
 		LCD_datX rad_anim, tmpreg
 
 		rcall nxt_an_frame
+
+		;adc test section
+
+		sbi Vmeas_port, P_Vmeas
+
+
+		LCD_XY 0,1
+		lds tmpreg, bat_volt
+		LCD_datX sm_digits, tmpreg
+		LCD_spX 1,1
+		LCD_dat MINI_dot
+		lds tmpreg, bat_tenthvolt
+		LCD_datX sm_digits, tmpreg
+
+		ldi tmpreg, (1<<REFS1)|(1<<REFS0)|(1<<ADLAR)|(7<<MUX0)
+		sts	ADMUX, tmpreg
+		ldi tmpreg, (1<<ADEN)|(1<<ADSC)|(1<<ADIE)|(2<<ADPS0)
+		sts ADCSRA, tmpreg
+		;----------------------------------------------------
+
 	no_qsec:
 		rjmp loop
 
@@ -339,17 +376,7 @@ reset:
 	;function prototypes for testing purposes
 	; move to functions inc after complete and test
 	;=====================================================
-	bcd_adc_convert:
-	;0x01 = 4,297 * 10E-3 (8bit)
-	;0x01 = 1.074 * 10E-3 (12bit)
-	;high
-	; > 1V = > 46
 
-
-	;low
-
-
-	ret
 
 	;====================================
 
@@ -399,6 +426,10 @@ anim_count: .byte 1
 
 samples_count: .byte 1 ;catched samples counter  
 pulses: .byte 1 ; count pulses from sensor
+
+;battery voltage storage
+bat_volt: .byte 1
+bat_tenthvolt: .byte 1
 
 ;rtc vars
 rtc_sec: .byte 1

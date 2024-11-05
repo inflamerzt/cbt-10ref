@@ -70,9 +70,10 @@ LCD_XY 20,3
 
 LCD_XY 0,1
 LCD_dat MINI_CIFRA_0
+LCD_spX 1,1
 LCD_dat MINI_dot
 LCD_dat MINI_CIFRA_0
-
+LCD_dat volt
 ;LCD_dat MINI_CIFRA_1
 ;LCD_dat MINI_CIFRA_2
 ;LCD_dat MINI_CIFRA_3
@@ -130,8 +131,8 @@ LCD_dat soundON
 LCD_XY 17,1
 ;LCD_dat alarmOFF
 LCD_dat alarmON
-LCD_XY 11,1
-LCD_dat volt
+;LCD_XY 11,1
+
 ;LCD_dat count_menu
 ;LCD_dat alarm_menu
 ;LCD_dat threshold_menu
