@@ -30,6 +30,8 @@ test_primitive:
 	LCD_dat batter_fill
 	LCD_dat batter_nofill
 	LCD_dat batter_fill
+	LCD_dat batter_nofill
+	LCD_dat batter_fill
 	LCD_dat batter_bcap
 	;*/
 	;LCD_dat Alfa  
@@ -66,13 +68,13 @@ test_primitive:
 
 	;==========================================================
 
-LCD_XY 20,3
+;LCD_XY 20,3
 
-LCD_XY 0,1
-LCD_dat MINI_CIFRA_0
-LCD_spX 1,1
-LCD_dat MINI_dot
-LCD_dat MINI_CIFRA_0
+LCD_XY 12,2
+;LCD_dat MINI_CIFRA_0
+;LCD_spX 1,2
+;LCD_dat MINI_dot
+;LCD_dat MINI_CIFRA_0
 LCD_dat volt
 ;LCD_dat MINI_CIFRA_1
 ;LCD_dat MINI_CIFRA_2
@@ -106,7 +108,7 @@ LCD_dat volt
 ;LCD_dat PLAV
 ;LCD_dat SUMMA
 ;LCD_dat CPS
-;LCD_dat MkrH ; reduce size
+;LCD_dat MkrH 
 ;LCD_dat Batter ; remove zeroes from below
 ;LCD_dat Batter_fill
 ;LCD_dat Batter_nofill
@@ -125,14 +127,25 @@ LCD_dat volt
 ;LCD_dat Plus
 ;LCD_dat Strelka
 ;--------------------
-LCD_XY 16,0
+LCD_XY 0,1
 ;LCD_dat soundOFF
 LCD_dat soundON
-LCD_XY 17,1
-;LCD_dat alarmOFF
-LCD_dat alarmON
-;LCD_XY 11,1
-
+LCD_dat alarmOFF
+;LCD_dat alarmON
+LCD_XY 19,0
+LCD_dat T
+LCD_spX 1,0
+LCD_dat mini_Ddot
+LCD_XY 19,1
+LCD_dat SUMMA
+LCD_XY 82,1
+LCD_dat cps
+LCD_XY 71,3
+LCD_dat Bq_cm2
+LCD_XY 71,5
+LCD_dat Bq_cm2
+LCD_XY 78,7
+LCD_dat MkrH
 ;LCD_dat count_menu
 ;LCD_dat alarm_menu
 ;LCD_dat threshold_menu
@@ -160,24 +173,27 @@ ret
 test_screen:
 	;========= fill zeroes at timer positions
 	
+	
 	LCD_XY timer_posx,timer_posy
-	LCD_dat CIFRA_0
+	LCD_dat MINI_CIFRA_0
 	LCD_XY timer_posx+8,timer_posy
-	LCD_dat	CIFRA_0
+	LCD_dat	MINI_CIFRA_0
 	LCD_XY timer_posx+16,timer_posy
-	LCD_dat DDot
+	LCD_dat MINI_Ddot
 	LCD_XY timer_posx+20,timer_posy
-	LCD_dat CIFRA_0
+	LCD_dat MINI_CIFRA_0
 	LCD_XY timer_posx+28,timer_posy
-	LCD_dat CIFRA_0		
+	LCD_dat MINI_CIFRA_0		
 	LCD_XY timer_posx+36,timer_posy
-	LCD_dat DDot
+	LCD_dat MINI_Ddot
 	LCD_XY timer_posx+40,timer_posy
-	LCD_dat CIFRA_0
+	LCD_dat MINI_CIFRA_0
 	LCD_XY timer_posx+48,timer_posy
-	LCD_dat CIFRA_0
-	LCD_XY 96-10,0
-	LCD_dat SUMMA
+	LCD_dat MINI_CIFRA_0
+	;LCD_XY 96-10,0
+	;LCD_dat SUMMA
+	
 ret
 
+    
 ;===============================================================

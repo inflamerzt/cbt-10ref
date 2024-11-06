@@ -247,7 +247,7 @@ reset:
 	;ldi		r24, 0b11000100		; 62,5 kHz	однократное преобразование
 	;sts		ADCSRA, r24
 
-	sbi Vmeas_port, P_Vmeas
+	cbi Vmeas_port, P_Vmeas
 
 	ldi tmpreg, (1<<REFS1)|(1<<REFS0)|(1<<ADLAR)|(7<<MUX0)
 	sts	ADMUX, tmpreg
@@ -308,7 +308,7 @@ reset:
 	
 		rcall rtc
 
-		LCD_XY 40,3
+		LCD_XY 15,4
 		LCD_spX 32,4	
 		
 		ldi XH,high(icons_shifts)
@@ -316,7 +316,7 @@ reset:
 		add XL,tmpcount
 		adc XH,zeroreg
 		ld tmpreg,X
-		LCD_XY_shifttr 40,3,tmpreg
+		LCD_XY_shifttr 15,4,tmpreg
 		;LCD_XY 40,3
 		;ldi tmpreg, 0
 		LCD_datX icons, tmpcount
@@ -349,10 +349,10 @@ reset:
 
 		;adc test section
 
-		sbi Vmeas_port, P_Vmeas
+		cbi Vmeas_port, P_Vmeas
 
 
-		LCD_XY 0,1
+		LCD_XY 0,2
 		lds tmpreg, bat_volt
 		LCD_datX sm_digits, tmpreg
 		LCD_spX 1,1
