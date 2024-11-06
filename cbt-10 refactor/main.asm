@@ -13,6 +13,7 @@
 
 ;.equ DBG = 1  ;comment before flash
 
+
 .include "def.inc"
 
 .include "int.inc"
@@ -247,7 +248,11 @@ reset:
 	;ldi		r24, 0b11000100		; 62,5 kHz	однократное преобразование
 	;sts		ADCSRA, r24
 
+	.ifdef meas_pin_vcc
+	sbi Vmeas_port, P_Vmeas
+	.else
 	cbi Vmeas_port, P_Vmeas
+	.endif
 
 	ldi tmpreg, (1<<REFS1)|(1<<REFS0)|(1<<ADLAR)|(7<<MUX0)
 	sts	ADMUX, tmpreg
@@ -349,9 +354,13 @@ reset:
 
 		;adc test section
 
+		.ifdef meas_pin_vcc
+		sbi Vmeas_port, P_Vmeas
+		.else
 		cbi Vmeas_port, P_Vmeas
+		.endif
 
-
+		
 		LCD_XY 0,2
 		lds tmpreg, bat_volt
 		LCD_datX sm_digits, tmpreg
@@ -359,7 +368,7 @@ reset:
 		LCD_dat MINI_dot
 		lds tmpreg, bat_tenthvolt
 		LCD_datX sm_digits, tmpreg
-
+		
 		ldi tmpreg, (1<<REFS1)|(1<<REFS0)|(1<<ADLAR)|(7<<MUX0)
 		sts	ADMUX, tmpreg
 		ldi tmpreg, (1<<ADEN)|(1<<ADSC)|(1<<ADIE)|(2<<ADPS0)

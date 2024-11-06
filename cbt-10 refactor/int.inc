@@ -3,10 +3,11 @@ EXT_INT1:
 push tmpreg
 in tmpreg, SREG
 push tmpreg
+push tmpregh
 
 
 
-
+pop tmpregh
 pop tmpreg
 out SREG,tmpreg
 pop tmpreg
@@ -17,6 +18,7 @@ PCINT1_int:
 push tmpreg
 in tmpreg, SREG
 push tmpreg
+push tmpregh
 
 
 sbis PINC, PC2
@@ -25,7 +27,7 @@ rcall backlight_off
 sbis PINC, PC3
 rcall backlight_on
 
-
+pop tmpregh
 pop tmpreg
 out SREG,tmpreg
 pop tmpreg
@@ -40,11 +42,16 @@ ADC_compl:
 	push r1
 	push r0
 
+	.ifdef meas_pin_vcc
 	cbi Vmeas_port, P_Vmeas
+	.else
+	sbi Vmeas_port, P_Vmeas
+	.endif
 
 	lds tmpreg, ADCH
 	lsr tmpreg
 	lsr tmpreg
+	cpse tmpreg, zeroreg
 	dec tmpreg ; 0.1 volt correction
 	mov tmpregh, tmpreg
 	push tmpregh

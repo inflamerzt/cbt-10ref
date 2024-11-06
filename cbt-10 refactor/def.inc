@@ -1,7 +1,7 @@
 ; cps 00.000
 ; uR/h 00.00
 
-
+.equ meas_pin_vcc = 1 ; pull measuring pin to vss to measure, comment othervise
 
 .equ LC_pwroff = 0x20
 .equ LC_pwron = 0x2F

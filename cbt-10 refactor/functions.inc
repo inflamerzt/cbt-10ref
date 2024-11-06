@@ -57,6 +57,7 @@
 		
 	SPI_TX:
 		out SPCR, zeroreg		;disable hardware SPI
+		cli
 		sbi PORTB, P_SCK		;pull up SCK to send D/C SPI signal
 		out SPCR, spenreg		;enable hardware SPI
 	
@@ -73,7 +74,7 @@
 		out SPDR,arg			;starting transfer
 		inv_end:
 		cbi PORTB, P_SCK		;release SCK, after start to reduce cpu cycles
-
+		sei
 		;prepare new data before byte transmit complete
 		dec TXCount
 		breq wait_TX_complete
@@ -191,7 +192,7 @@
 		sts rtc_dhour,tmpregh
 		sts rtc_hour,tmpreg
 
-		LCD_XY timer_posx+8,timer_posy
+		LCD_XY timer_posx+5,timer_posy
 		lds tmpreg, rtc_hour
 		LCD_datX sm_digits, tmpreg
 		LCD_XY timer_posx,timer_posy
@@ -199,10 +200,10 @@
 		LCD_datX sm_digits, tmpreg
 	
 	no_minovf:
-		LCD_XY timer_posx+28,timer_posy
+		LCD_XY timer_posx+13,timer_posy
 		lds tmpreg, rtc_min
 		LCD_datX sm_digits, tmpreg
-		LCD_XY timer_posx+20,timer_posy
+		LCD_XY timer_posx+8,timer_posy
 		lds tmpreg, rtc_dmin
 		LCD_datX sm_digits, tmpreg
 	
