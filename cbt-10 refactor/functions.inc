@@ -192,7 +192,7 @@
 		sts rtc_dhour,tmpregh
 		sts rtc_hour,tmpreg
 
-		LCD_XY timer_posx+5,timer_posy
+		LCD_XY timer_posx+6,timer_posy
 		lds tmpreg, rtc_hour
 		LCD_datX sm_digits, tmpreg
 		LCD_XY timer_posx,timer_posy
@@ -200,18 +200,18 @@
 		LCD_datX sm_digits, tmpreg
 	
 	no_minovf:
-		LCD_XY timer_posx+13,timer_posy
+		LCD_XY timer_posx+21,timer_posy
 		lds tmpreg, rtc_min
 		LCD_datX sm_digits, tmpreg
-		LCD_XY timer_posx+8,timer_posy
+		LCD_XY timer_posx+15,timer_posy
 		lds tmpreg, rtc_dmin
 		LCD_datX sm_digits, tmpreg
 	
 	no_secovf:
-		LCD_XY timer_posx+48,timer_posy
+		LCD_XY timer_posx+36,timer_posy
 		lds tmpreg, rtc_sec
 		LCD_datX sm_digits, tmpreg
-		LCD_XY timer_posx+40,timer_posy
+		LCD_XY timer_posx+30,timer_posy
 		lds tmpreg, rtc_dsec
 		LCD_datX sm_digits, tmpreg
 

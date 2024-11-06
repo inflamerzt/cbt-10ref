@@ -75,7 +75,7 @@ LCD_XY 12,2
 ;LCD_spX 1,2
 ;LCD_dat MINI_dot
 ;LCD_dat MINI_CIFRA_0
-LCD_dat volt
+;LCD_dat volt
 ;LCD_dat MINI_CIFRA_1
 ;LCD_dat MINI_CIFRA_2
 ;LCD_dat MINI_CIFRA_3
@@ -138,12 +138,27 @@ LCD_spX 1,0
 LCD_dat mini_Ddot
 LCD_XY 19,1
 LCD_dat SUMMA
+LCD_spX 1,0
+LCD_dat MINI_Ddot
+LCD_spX 30,0
+LCD_inv
+LCD_dat MINI_CIFRA_2
+LCD_dat MINI_CIFRA_9
+LCD_dat MINI_CIFRA_4
+LCD_spX 1,0
+LCD_dat MINI_dot
+LCD_dat MINI_CIFRA_1
+LCD_norm
+
 LCD_XY 82,1
 LCD_dat cps
+
 LCD_XY 71,3
 LCD_dat Bq_cm2
+
 LCD_XY 71,5
 LCD_dat Bq_cm2
+
 LCD_XY 78,7
 LCD_dat MkrH
 ;LCD_dat count_menu
@@ -163,6 +178,47 @@ LCD_dat MkrH
 ;LCD_dat bat_cal_pic
 ;LCD_dat contr_pic
 
+LCD_XY 0,2
+LCD_dat Alfa
+LCD_XY 9,2
+LCD_dat Equal
+LCD_XY 42,2
+LCD_dat CIFRA_1
+LCD_XY 50,2
+LCD_dat ZAPITAY
+LCD_XY 54,2
+LCD_dat CIFRA_8
+LCD_XY 62,2
+LCD_dat CIFRA_7
+
+LCD_XY 0,4
+LCD_dat Beta
+LCD_XY 9,4
+LCD_dat Equal
+LCD_XY 42,4
+LCD_dat CIFRA_3
+LCD_XY 50,4
+LCD_dat ZAPITAY
+LCD_XY 54,4
+LCD_dat CIFRA_2
+LCD_XY 62,4
+LCD_dat CIFRA_4
+
+LCD_XY 0,6
+LCD_dat Gamma
+LCD_XY 9,6
+LCD_dat Equal
+LCD_XY 34,6
+LCD_dat CIFRA_2
+LCD_XY 42,6
+LCD_dat CIFRA_0
+LCD_XY 50,6
+LCD_dat ZAPITAY
+LCD_XY 54,6
+LCD_dat CIFRA_9
+LCD_XY 62,6
+LCD_dat CIFRA_2
+
 ;==========================================================
 
 
@@ -176,19 +232,19 @@ test_screen:
 	
 	LCD_XY timer_posx,timer_posy
 	LCD_dat MINI_CIFRA_0
-	LCD_XY timer_posx+8,timer_posy
+	LCD_XY timer_posx+6,timer_posy
 	LCD_dat	MINI_CIFRA_0
-	LCD_XY timer_posx+16,timer_posy
+	LCD_XY timer_posx+13,timer_posy
 	LCD_dat MINI_Ddot
-	LCD_XY timer_posx+20,timer_posy
+	LCD_XY timer_posx+15,timer_posy
 	LCD_dat MINI_CIFRA_0
-	LCD_XY timer_posx+28,timer_posy
+	LCD_XY timer_posx+21,timer_posy
 	LCD_dat MINI_CIFRA_0		
-	LCD_XY timer_posx+36,timer_posy
+	LCD_XY timer_posx+28,timer_posy
 	LCD_dat MINI_Ddot
-	LCD_XY timer_posx+40,timer_posy
+	LCD_XY timer_posx+30,timer_posy
 	LCD_dat MINI_CIFRA_0
-	LCD_XY timer_posx+48,timer_posy
+	LCD_XY timer_posx+36,timer_posy
 	LCD_dat MINI_CIFRA_0
 	;LCD_XY 96-10,0
 	;LCD_dat SUMMA

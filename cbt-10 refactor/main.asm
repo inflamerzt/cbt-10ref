@@ -312,7 +312,7 @@ reset:
 		bld controlreg, sec_tick ;reset flag
 	
 		rcall rtc
-
+		/*
 		LCD_XY 15,4
 		LCD_spX 32,4	
 		
@@ -329,6 +329,7 @@ reset:
 		cpi tmpcount,8
 		brlo no_clr
 		clr tmpcount
+		*/
 		no_clr:
 
 
@@ -345,12 +346,16 @@ reset:
 		;reset flag
 		clt 
 		bld controlreg, qsec_tick
+
+		/*
 		LCD_XY rad_an_posx,rad_an_posy
 
 		lds tmpreg, anim_count
 		LCD_datX rad_anim, tmpreg
 
 		rcall nxt_an_frame
+		*/
+
 
 		;adc test section
 

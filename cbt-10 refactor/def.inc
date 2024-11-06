@@ -26,7 +26,7 @@
 .equ clrb_onreset = 11
 
 ;timer position
-.equ timer_posx = 28 ;40 - max
+.equ timer_posx = 30 ;40 - max
 .equ timer_posy = 0
 
 ;rad_anim_position
