@@ -138,22 +138,27 @@ LCD_XY 20,0
 LCD_dat T
 LCD_spX 1,0
 LCD_dat mini_Ddot
+LCD_inv
+LCD_XY 0,7
+LCD_spX 96,0
 LCD_XY 6,7
 LCD_dat SUMMA
 LCD_spX 1,0
 LCD_dat MINI_Ddot
 LCD_spX 34,0
-LCD_inv
+
 LCD_dat MINI_CIFRA_2
 LCD_dat MINI_CIFRA_9
 LCD_dat MINI_CIFRA_4
 LCD_spX 1,0
 LCD_dat MINI_dot
 LCD_dat MINI_CIFRA_1
-LCD_norm
+
 
 LCD_XY 71,7
 LCD_dat cps
+
+LCD_norm
 
 LCD_XY 71,2
 LCD_dat Bq_cm2
