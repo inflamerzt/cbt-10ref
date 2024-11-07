@@ -53,7 +53,7 @@ MINI_dot:
 
 MINI_Ddot:
 .db 1,1, \
-0x12 , 0
+0x24 , 0
 
 CIFRA_0:
 .db	8, 2, \

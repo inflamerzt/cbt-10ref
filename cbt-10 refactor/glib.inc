@@ -19,10 +19,11 @@ test_primitive:
 	;LCD_dat mkrh
 	;/*
 	;------------LCD_dat batter
+	LCD_XY 0,0
 	LCD_dat batter_cap
 	LCD_dat batter_nofill
-	LCD_dat batter_fill
-	LCD_dat batter_nofill
+	;LCD_dat batter_fill
+	;LCD_dat batter_nofill
 	LCD_dat batter_fill
 	LCD_dat batter_nofill
 	LCD_dat batter_fill
@@ -127,20 +128,21 @@ LCD_XY 12,2
 ;LCD_dat Plus
 ;LCD_dat Strelka
 ;--------------------
-LCD_XY 0,1
+LCD_XY 96-8,0
 ;LCD_dat soundOFF
 LCD_dat soundON
+LCD_XY 96-16,0
 LCD_dat alarmOFF
 ;LCD_dat alarmON
-LCD_XY 19,0
+LCD_XY 20,0
 LCD_dat T
 LCD_spX 1,0
 LCD_dat mini_Ddot
-LCD_XY 19,1
+LCD_XY 6,7
 LCD_dat SUMMA
 LCD_spX 1,0
 LCD_dat MINI_Ddot
-LCD_spX 30,0
+LCD_spX 34,0
 LCD_inv
 LCD_dat MINI_CIFRA_2
 LCD_dat MINI_CIFRA_9
@@ -150,16 +152,16 @@ LCD_dat MINI_dot
 LCD_dat MINI_CIFRA_1
 LCD_norm
 
-LCD_XY 82,1
+LCD_XY 71,7
 LCD_dat cps
 
-LCD_XY 71,3
+LCD_XY 71,2
 LCD_dat Bq_cm2
 
-LCD_XY 71,5
+LCD_XY 71,4
 LCD_dat Bq_cm2
 
-LCD_XY 78,7
+LCD_XY 71,6
 LCD_dat MkrH
 ;LCD_dat count_menu
 ;LCD_dat alarm_menu
@@ -178,45 +180,45 @@ LCD_dat MkrH
 ;LCD_dat bat_cal_pic
 ;LCD_dat contr_pic
 
-LCD_XY 0,2
+LCD_XY 0,1
 LCD_dat Alfa
-LCD_XY 9,2
+LCD_XY 9,1
 LCD_dat Equal
-LCD_XY 42,2
+LCD_XY 42,1
 LCD_dat CIFRA_1
-LCD_XY 50,2
+LCD_XY 50,1
 LCD_dat ZAPITAY
-LCD_XY 54,2
+LCD_XY 54,1
 LCD_dat CIFRA_8
-LCD_XY 62,2
+LCD_XY 62,1
 LCD_dat CIFRA_7
 
-LCD_XY 0,4
+LCD_XY 0,3
 LCD_dat Beta
-LCD_XY 9,4
+LCD_XY 9,3
 LCD_dat Equal
-LCD_XY 42,4
+LCD_XY 42,3
 LCD_dat CIFRA_3
-LCD_XY 50,4
+LCD_XY 50,3
 LCD_dat ZAPITAY
-LCD_XY 54,4
+LCD_XY 54,3
 LCD_dat CIFRA_2
-LCD_XY 62,4
+LCD_XY 62,3
 LCD_dat CIFRA_4
 
-LCD_XY 0,6
+LCD_XY 0,5
 LCD_dat Gamma
-LCD_XY 9,6
+LCD_XY 9,5
 LCD_dat Equal
-LCD_XY 34,6
+LCD_XY 34,5
 LCD_dat CIFRA_2
-LCD_XY 42,6
+LCD_XY 42,5
 LCD_dat CIFRA_0
-LCD_XY 50,6
+LCD_XY 50,5
 LCD_dat ZAPITAY
-LCD_XY 54,6
+LCD_XY 54,5
 LCD_dat CIFRA_9
-LCD_XY 62,6
+LCD_XY 62,5
 LCD_dat CIFRA_2
 
 ;==========================================================

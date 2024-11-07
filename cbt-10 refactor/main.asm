@@ -365,7 +365,7 @@ reset:
 		cbi Vmeas_port, P_Vmeas
 		.endif
 
-		
+		/*
 		LCD_XY 0,2
 		lds tmpreg, bat_volt
 		LCD_datX sm_digits, tmpreg
@@ -373,11 +373,12 @@ reset:
 		LCD_dat MINI_dot
 		lds tmpreg, bat_tenthvolt
 		LCD_datX sm_digits, tmpreg
-		
+		*/
 		ldi tmpreg, (1<<REFS1)|(1<<REFS0)|(1<<ADLAR)|(7<<MUX0)
 		sts	ADMUX, tmpreg
 		ldi tmpreg, (1<<ADEN)|(1<<ADSC)|(1<<ADIE)|(2<<ADPS0)
 		sts ADCSRA, tmpreg
+
 		;----------------------------------------------------
 
 	no_qsec:
