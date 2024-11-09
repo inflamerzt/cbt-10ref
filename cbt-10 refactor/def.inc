@@ -3,6 +3,8 @@
 
 .equ meas_pin_vcc = 1 ; pull measuring pin to vss to measure, comment othervise
 
+.equ cps_buf_size = 20; size of cps bytes
+
 .equ LC_pwroff = 0x20
 .equ LC_pwron = 0x2F
 .equ LC_nallon_dis = 0xA4 ;normal display

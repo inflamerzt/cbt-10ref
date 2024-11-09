@@ -5,7 +5,15 @@ in tmpreg, SREG
 push tmpreg
 push tmpregh
 
-
+lds tmpreg, cps_count
+ldi tmpregh, 1
+add tmpreg, tmpregh
+brcc no_cps_ovf
+lds tmpregh, cps_counth
+adc tmpregh,zeroreg
+sts cps_counth, tmpregh
+no_cps_ovf:
+sts cps_count, tmpreg
 
 pop tmpregh
 pop tmpreg
@@ -184,7 +192,7 @@ push tmpreg
 
 lds tmpreg, qsecond
 inc tmpreg
-sbrs tmpreg, 3
+sbrs tmpreg, 4
 rjmp end_qsecond
 clr tmpreg
 set
@@ -192,22 +200,16 @@ bld controlreg,qsec_tick
 end_qsecond:
 sts qsecond,tmpreg
 
+
 lds tmpreg, qqsecond
 inc tmpreg
-sbrs tmpreg, 5
+sbrs tmpreg, 6
 rjmp end_TIM2_COMPA
 ;every second tick
 clr tmpreg
-push tmpregh
 ;seconds manipulation
 set
 bld controlreg, sec_tick
-
-in tmpreg, PORTD
-ldi tmpregh, (1<<PD6)
-eor tmpreg, tmpregh
-out PORTD, tmpreg
-pop tmpregh
 
 end_TIM2_COMPA:
 sts qqsecond,tmpreg

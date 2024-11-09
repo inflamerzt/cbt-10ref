@@ -316,7 +316,7 @@ enable_systick:
 	 sts OCR2A,tmpreg
 	 ldi tmpreg, (1<<WGM21)
 	 sts TCCR2A,tmpreg 
-	 ldi tmpreg, (6<<CS20) ;1/32 sec
+	 ldi tmpreg, (7<<CS20) ;1/32 sec
 	 sts TCCR2B,tmpreg 
 	 ldi tmpreg,(1<<OCIE2A)
 	 sts TIMSK2,tmpreg

@@ -128,23 +128,43 @@ LCD_XY 12,2
 ;LCD_dat Plus
 ;LCD_dat Strelka
 ;--------------------
+;LCD_inv
 LCD_XY 96-8,0
 ;LCD_dat soundOFF
 LCD_dat soundON
-LCD_XY 96-16,0
+LCD_XY 96-18,0
 LCD_dat alarmOFF
 ;LCD_dat alarmON
+;LCD_norm
 LCD_XY 20,0
 LCD_dat T
 LCD_spX 1,0
 LCD_dat mini_Ddot
-LCD_inv
+;LCD_inv
 LCD_XY 0,7
 LCD_spX 96,0
 LCD_XY 6,7
 LCD_dat SUMMA
 LCD_spX 1,0
 LCD_dat MINI_Ddot
+
+
+;LCD_spX 2,0
+
+LCD_dat MINI_CIFRA_1
+LCD_dat MINI_CIFRA_2
+LCD_dat MINI_CIFRA_3
+LCD_dat MINI_CIFRA_4
+LCD_dat MINI_CIFRA_5
+LCD_dat MINI_CIFRA_6
+LCD_dat MINI_CIFRA_7
+LCD_dat MINI_CIFRA_8
+LCD_dat MINI_CIFRA_9
+LCD_dat MINI_CIFRA_0
+LCD_dat MINI_CIFRA_1
+LCD_spX 1,0
+LCD_dat MINI_dot
+/*
 LCD_spX 34,0
 
 LCD_dat MINI_CIFRA_2
@@ -153,12 +173,15 @@ LCD_dat MINI_CIFRA_4
 LCD_spX 1,0
 LCD_dat MINI_dot
 LCD_dat MINI_CIFRA_1
-
+*/
 
 LCD_XY 71,7
 LCD_dat cps
 
-LCD_norm
+LCD_XY 88,7
+LCD_dat CIFRA_8
+
+;LCD_norm
 
 LCD_XY 71,2
 LCD_dat Bq_cm2

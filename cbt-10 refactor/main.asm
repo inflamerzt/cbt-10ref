@@ -85,8 +85,8 @@ reset:
 	; TIFR0 <- OCF0A - set interrupt to wake cpu
 	ldi tmpreg, (1<<OCIE0A)
 	sts TIMSK0, tmpreg
-	; out OCR0A, 10  - 10ms period or other stable reset timeout ex 100ms
-	ldi tmpreg, 10
+	; out OCR0A, 10  - 10ms period or other stable reset timeout ex 100ms * 8 (1->8MHz)
+	ldi tmpreg, 80
 	out OCR0A, tmpreg
 	; configure prescaller 1024
 	ldi tmpreg, (5<<CS00)
@@ -182,6 +182,17 @@ reset:
 	st X+, tmpreg
 	ldi tmpreg, scontr_pic
 	st X+, tmpreg
+	;-----------------------
+	;setup cps buffer
+	ldi tmpreg, cps_buf_size
+	sts cps_buf_counter, tmpreg
+	ldi tmpregh, high(cps_buffer)
+	ldi tmpreg, low(cps_buffer)
+	sts cps_wr_ptr,tmpregh
+	sts cps_rd_ptr, tmpregh
+	sts cps_wr_ptr+1,tmpreg
+	sts cps_rd_ptr+1, tmpreg
+
 	
 	;==============================================
 	;==============================================
@@ -332,6 +343,15 @@ reset:
 		*/
 		no_clr:
 
+		cli
+		; atomic operation read and clear CPS count
+		lds tmpregh, cps_counth
+		lds tmpreg, cps_count
+		sts cps_counth, zeroreg
+		sts cps_count, zeroreg
+		sei
+
+		; convert 16bit to bcd
 
 
 
@@ -453,6 +473,16 @@ rtc_min: .byte 1
 rtc_dmin: .byte 1
 rtc_hour: .byte 1
 rtc_dhour: .byte 1
+
+;cps count
+cps_counth: .byte 1
+cps_count: .byte 1
+;CPS FIFO BUFFER
+cps_buf_counter: .byte 1
+cps_wr_ptr: .byte 2
+cps_rd_ptr: .byte 2
+cps_buffer: .byte cps_buf_size
+
 
 ;pointers
 sm_digits: .byte 20
