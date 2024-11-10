@@ -96,7 +96,7 @@ TIM1_COMPA: ; Timer1 Compare A Handler
 ;check feedback and manipulate frequency
 cbi PORT_booster, P_bCap
 sbi PORT_booster, P_bTrans
-; 0us
+; 0us 1cyc = 0.125us
 push tmpregh ;2
 push tmpreg ;2
 in tmpreg, SREG ;1 - 5us
@@ -106,9 +106,15 @@ push XH ;2 - 11us
 ldi tmpregh, DCboost_period;1 -12us
 lds XH,OCR1AH ;2 - 14us
 lds XL,OCR1AL;2 - 16us
-push tmpreg; 2 - 18us
-pop tmpreg; 2 - 20us
-;20us
+push tmpreg; 2 - 18us 2,5us with pop
+
+ldi tmpreg, 35; 1 
+w20us:
+nop ;1
+dec tmpreg ; 1
+brne w20us ;2/1
+pop tmpreg; 2
+;20us at 8MHz
 ;check feedback if suppressor opened 
 sbis PINC,P_boostFB
 rjmp freq_up
@@ -167,7 +173,7 @@ cbi PORT_booster, P_bTrans
 sbi PORT_booster, P_bDiode
 cbi PORT_booster, P_bCap
 
-;do anything minimum 6 cpu cycles to charge cap
+;do anything minimum 6 cpu cycles to charge cap x8
 
 push tmpreg ;2
 in tmpreg, SREG ;1

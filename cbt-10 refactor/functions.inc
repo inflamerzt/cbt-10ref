@@ -301,7 +301,7 @@ enable_booster:
 	ldi tmpreg, (1<<OCIE1A) | (1<<OCIE1B)
 	sts TIMSK1, tmpreg
 
-	ldi tmpreg, (1<<WGM12)|(3<<CS10)
+	ldi tmpreg, (1<<WGM12)|(6<<CS10)
 	sts TCCR1B, tmpreg
 ret
 
