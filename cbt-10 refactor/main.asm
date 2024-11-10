@@ -193,6 +193,15 @@ reset:
 	sts cps_wr_ptr+1,tmpreg
 	sts cps_rd_ptr+1, tmpreg
 
+
+	ldi tmpreg, clr_data_size
+	clr_loop:
+	ldi XH, high(TXCountMem)
+	ldi XL, low(TXCountMem)
+	dec tmpreg
+	brne clr_loop
+	
+
 	
 	;==============================================
 	;==============================================
