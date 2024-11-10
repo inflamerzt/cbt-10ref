@@ -173,10 +173,18 @@ cbi PORT_booster, P_bTrans
 sbi PORT_booster, P_bDiode
 cbi PORT_booster, P_bCap
 
-;do anything minimum 6 cpu cycles to charge cap x8
+;do anything minimum 6 cpu cycles to charge cap x8 = 48cycles
 
 push tmpreg ;2
 in tmpreg, SREG ;1
+push tmpreg; 2
+; 38 cycles
+ldi tmpreg, 10 ; simplify and charge 6,5us
+w6us:
+nop ;1
+dec tmpreg ; 1
+brne w6us ;2/1
+pop tmpreg; 2
 out SREG,tmpreg ;1
 pop tmpreg ;2
 
